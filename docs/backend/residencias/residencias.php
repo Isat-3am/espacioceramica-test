@@ -37,10 +37,15 @@ function campo($col, $label, $tipo, $filas, $results, $lang)
   $sufijo = $lang == 'en' ? ' (English)' : ' (Spanish)';
   echo '<div class="col col-12 col-md-6 mb-3' . ($lang == 'es' ? ' pe-md-3' : '') . '">';
   echo '<label class="form-label">' . h($label) . $sufijo . '</label>';
+  $attrs = 'name="' . $name . '" data-col="' . $col . '" data-lang="' . $lang . '"';
   if ($tipo == 'textarea') {
-    echo '<textarea name="' . $name . '" cols="30" rows="' . $filas . '" class="form-control bg-transparent text-white mb-2">' . $value . '</textarea>';
+    echo '<textarea ' . $attrs . ' cols="30" rows="' . $filas . '" class="form-control bg-transparent text-white mb-2">' . $value . '</textarea>';
   } else {
-    echo '<input type="text" name="' . $name . '" class="form-control bg-transparent text-white mb-2" value="' . $value . '" />';
+    echo '<input type="text" ' . $attrs . ' class="form-control bg-transparent text-white mb-2" value="' . $value . '" />';
+  }
+  if ($lang == 'en') {
+    echo '<button type="button" class="btn btn-sm btn-outline-secondary btn-traducir" data-col="' . $col . '">Traducir</button> ';
+    echo '<span class="small text-secondary msg-traducir" data-col="' . $col . '"></span>';
   }
   echo '</div>';
 }
@@ -302,6 +307,82 @@ require("includes/head.php");
     }
     require("includes/footer.php");
     ?>
+    <script>
+      // Traduccion automatica espanol -> ingles (traducir.php).
+      // Regla: solo se traduce si la casilla en ingles esta vacia. Nunca pisa texto escrito.
+      (function() {
+        function campo(col, lang) {
+          return document.querySelector('[data-col="' + col + '"][data-lang="' + lang + '"]');
+        }
+
+        function boton(col) {
+          return document.querySelector('.btn-traducir[data-col="' + col + '"]');
+        }
+
+        function mensaje(col, texto) {
+          var el = document.querySelector('.msg-traducir[data-col="' + col + '"]');
+          if (el) el.textContent = texto;
+        }
+
+        function actualizarBoton(col) {
+          var es = campo(col, 'es'),
+            en = campo(col, 'en'),
+            btn = boton(col);
+          if (!btn || !es || !en) return;
+          var vacio = en.value.trim() === '';
+          btn.disabled = !vacio;
+          btn.title = vacio ? '' : 'Para volver a traducir, borrá el texto en inglés.';
+        }
+
+        function traducir(col) {
+          var es = campo(col, 'es'),
+            en = campo(col, 'en');
+          if (!es || !en) return;
+          if (en.value.trim() !== '' || es.value.trim() === '') return;
+          mensaje(col, 'Traduciendo...');
+          fetch('traducir.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'fetch'
+              },
+              body: 'text=' + encodeURIComponent(es.value)
+            })
+            .then(function(r) {
+              return r.json();
+            })
+            .then(function(data) {
+              if (data.ok) {
+                // Si mientras tanto alguien escribio en ingles, no se pisa.
+                if (en.value.trim() === '') en.value = data.text;
+                mensaje(col, 'Traducido. Revisalo antes de guardar.');
+              } else {
+                mensaje(col, data.error || 'No se pudo traducir.');
+              }
+              actualizarBoton(col);
+            })
+            .catch(function() {
+              mensaje(col, 'No se pudo traducir.');
+            });
+        }
+
+        document.querySelectorAll('.btn-traducir').forEach(function(btn) {
+          var col = btn.getAttribute('data-col');
+          actualizarBoton(col);
+          btn.addEventListener('click', function() {
+            traducir(col);
+          });
+          campo(col, 'en').addEventListener('input', function() {
+            actualizarBoton(col);
+            mensaje(col, '');
+          });
+          // Al salir de la casilla en español, se traduce sola si el inglés esta vacio.
+          campo(col, 'es').addEventListener('blur', function() {
+            traducir(col);
+          });
+        });
+      })();
+    </script>
   </main>
 </body>
 
