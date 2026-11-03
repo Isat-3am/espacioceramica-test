@@ -92,7 +92,7 @@ Igual a la ficha de producto (`tienda/[slug]`): título grande en mayúsculas, f
 - Forma de pago (50 % para confirmar y 50 % al llegar; cuotas a charlar).
 - Qué incluye y qué no incluye.
 - Condiciones (seguro de accidentes personales, actividad sujeta al clima, traer 4 piezas bizcochadas de hasta 15 cm).
-- Fotos.
+- Fotos: hasta 6 por residencia, cargadas con un solo botón (una o varias a la vez). La primera es la principal. Con 1 foto se ve una grande; con 2 a 6 van apiladas en la columna derecha con miniaturas al costado, igual que la ficha de producto (`tienda/[slug]`). No hay deslizamiento automático ni collage. Los datos van a la izquierda.
 - El formulario de inscripción de Google incrustado, con un enlace "abrir en una pestaña nueva" como respaldo.
 
 **No se muestra en la página, queda solo en el formulario** (son datos de cada persona):

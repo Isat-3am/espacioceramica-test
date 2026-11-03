@@ -10,6 +10,7 @@ require_once('./db/connection.php');
 
 $file_main = "residencias";
 $sec = 8;
+const MAX_FOTOS = 6;
 
 function h($value)
 {
@@ -100,10 +101,6 @@ if (isset($_POST['form'])) {
   $posicion = intval($_POST['posicion'] ?? 1);
   $valores['active'] = isset($_POST['active']) ? 1 : 0;
 
-  if (!empty($_FILES['userfile1']['name'])) {
-    $valores['image'] = guardar_imagen('userfile1');
-  }
-
   if ($valores['title'] === '') {
     $error = "El título es obligatorio.";
   } else {
@@ -127,7 +124,7 @@ if (isset($_POST['form'])) {
 
       reordenar($pdo, $id, $posicion);
 
-      // Fotos de la galeria que se marcaron para borrar
+      // Fotos que se marcaron para borrar
       if (!empty($_POST['del_img']) && is_array($_POST['del_img'])) {
         $statement = $pdo->prepare('DELETE FROM residencia_images WHERE id = ? AND residencia_id = ?');
         foreach ($_POST['del_img'] as $del) {
@@ -135,15 +132,25 @@ if (isset($_POST['form'])) {
         }
       }
 
-      // Fotos nuevas de la galeria (se pueden elegir varias a la vez)
-      if (!empty($_FILES['gallery']['name'][0])) {
+      // Fotos nuevas (una o varias a la vez). Maximo MAX_FOTOS en total por residencia.
+      $statement = $pdo->prepare('SELECT COUNT(*) FROM residencia_images WHERE residencia_id = ?');
+      $statement->execute([$id]);
+      $lugares = MAX_FOTOS - intval($statement->fetchColumn());
+      if (!empty($_FILES['gallery']['name'][0]) && $lugares > 0) {
         $statement = $pdo->prepare('INSERT INTO residencia_images (residencia_id, image, top) VALUES (?, ?, ?)');
         foreach ($_FILES['gallery']['name'] as $i => $nombre) {
+          if ($lugares <= 0) break;
           if ($_FILES['gallery']['error'][$i] !== UPLOAD_ERR_OK) continue;
           $_FILES['gallery_one'] = ['name' => $nombre, 'tmp_name' => $_FILES['gallery']['tmp_name'][$i]];
           $statement->execute([$id, guardar_imagen('gallery_one'), 0]);
+          $lugares--;
         }
       }
+
+      // La primera foto es la principal: se copia a la columna `image`.
+      $statement = $pdo->prepare('SELECT image FROM residencia_images WHERE residencia_id = ? ORDER BY id ASC LIMIT 1');
+      $statement->execute([$id]);
+      $pdo->prepare('UPDATE residencias SET image = ? WHERE id = ?')->execute([(string)$statement->fetchColumn(), $id]);
 
       header("Location:$file_main");
       die();
@@ -176,6 +183,12 @@ if (isset($_POST['form'])) {
   $statement = $pdo->prepare('SELECT * FROM residencias WHERE id = ?');
   $statement->execute([$id_select]);
   $results = $statement->fetch();
+  // Residencias cargadas con la version anterior del panel: su foto principal pasa a la galeria unica.
+  $statement = $pdo->prepare('SELECT COUNT(*) FROM residencia_images WHERE residencia_id = ?');
+  $statement->execute([$id_select]);
+  if ($results && !empty($results['image']) && intval($statement->fetchColumn()) === 0) {
+    $pdo->prepare('INSERT INTO residencia_images (residencia_id, image, top) VALUES (?, ?, 0)')->execute([$id_select, $results['image']]);
+  }
   $statement = $pdo->prepare('SELECT * FROM residencia_images WHERE residencia_id = ? ORDER BY id');
   $statement->execute([$id_select]);
   $gallery = $statement->fetchAll();
@@ -249,23 +262,33 @@ require("includes/head.php");
               <div class="row text-secondary">Link de Google Forms. Incluir https://</div>
             </div>
 
-            <div class="col col-12 col-md-6 pe-md-3 mb-3">
-              <label class="form-label">Foto principal</label>
-              <input name="userfile1" class="form-control bg-transparent text-white mb-2" type="file" accept="image/*">
-              <div class="row text-secondary">Recomendado: 1080 px de ancho.</div>
-              <?php if (!empty($results['image'])) echo '<a href="./images/' . h($results['image']) . '" target="_blank" class="opacity"><img src="./images/' . h($results['image']) . '" class="mt-3 img-circle-large mb-3" /></a>'; ?>
-            </div>
-            <div class="col col-12 col-md-6 mb-3">
-              <label class="form-label">Fotos de la galería (se pueden elegir varias)</label>
-              <input name="gallery[]" class="form-control bg-transparent text-white mb-2" type="file" accept="image/*" multiple>
+            <div class="col col-12 mb-3">
+              <label class="form-label">Fotos (hasta <?php echo MAX_FOTOS ?>)</label>
+              <input id="fotos" name="gallery[]" class="form-control bg-transparent text-white mb-2" type="file" accept="image/*" multiple data-max="<?php echo MAX_FOTOS ?>" data-actuales="<?php echo count($gallery) ?>">
+              <div class="row text-secondary">Se pueden elegir varias a la vez. La primera es la principal. Recomendado: 1080 px de ancho.</div>
               <?php
-              foreach ($gallery as $g) {
+              foreach ($gallery as $n => $g) {
                 echo '<div class="d-inline-block me-3 mt-2 text-center">';
                 echo '<img src="./images/' . h($g['image']) . '" class="img-circle-large mb-1" /><br>';
-                echo '<label class="small"><input type="checkbox" name="del_img[]" value="' . intval($g['id']) . '"> Borrar</label>';
+                echo '<div class="small">' . ($n == 0 ? 'Principal' : 'Foto ' . ($n + 1)) . '</div>';
+                echo '<label class="small"><input type="checkbox" class="borrar-foto" name="del_img[]" value="' . intval($g['id']) . '"> Borrar</label>';
                 echo '</div>';
               }
               ?>
+              <script>
+                // Avisa si se pasa del maximo de fotos (el servidor tambien lo controla).
+                (function() {
+                  var input = document.getElementById('fotos');
+                  input.addEventListener('change', function() {
+                    var max = parseInt(input.dataset.max, 10);
+                    var actuales = parseInt(input.dataset.actuales, 10) - document.querySelectorAll('.borrar-foto:checked').length;
+                    if (actuales + input.files.length > max) {
+                      alert('Máximo ' + max + ' fotos por residencia. Hay ' + actuales + ' cargadas: podés agregar ' + Math.max(0, max - actuales) + ' más. Si querés más, borrá alguna.');
+                      input.value = '';
+                    }
+                  });
+                })();
+              </script>
             </div>
 
             <div class="col col-12 col-md-6 pe-md-3 mb-3">
