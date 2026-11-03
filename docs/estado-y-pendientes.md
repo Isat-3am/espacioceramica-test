@@ -1,50 +1,88 @@
-# Estado y pendientes (traspaso desde el hilo del proyecto, 2026-11-03)
+# Estado y pendientes (actualizado 2026-11-03, tras revisar la PC de Marco)
 
 ## Objetivo
 Que Marco sea dueño y administrador técnico del sitio espacioceramicapatagonia.com, pueda publicar cambios sin depender del dev anterior (Mariano Arias) y sume: control de stock con descuento automático, una sección de talleres administrable, y más adelante Mercado Pago.
 
-## Mapa de la infraestructura (verificado por capturas y mails de Marco)
+## Mapa de la infraestructura
 | Pieza | Dónde está | Acceso actual |
 |---|---|---|
-| Dominio espacioceramicapatagonia.com | Registrador desconocido (probablemente comprado por el dev) | Sin acceso. Pendiente averiguar. |
-| DNS | Cloudflare, cuenta del dev (Hola@marianoarias.soy's Account) | Marco es miembro desde el 28/09/2026. Rol exacto sin verificar. |
+| Dominio espacioceramicapatagonia.com | Registrador desconocido (probablemente el dev) | Sin acceso. Pendiente averiguar. |
+| DNS | Cloudflare, cuenta del dev. 21 de 200 registros usados | Marco entra y ve los registros (capturas del 03/11). Falta confirmar si su rol permite editar. |
 | Frontend (este código) | Vercel (apex `@` A 216.198.79.1; `www` y `weekend` CNAME a vercel-dns; TXT `_vercel`) | Sin acceso. Pendiente. |
-| Backend, API, panel de productos, base MySQL, mail | Ferozo/DonWeb, IP 200.58.111.118 (`api`, `backend`, `api-test`, `backend-test`, `mail`, `ftp`) | Marco tiene usuario y clave del panel de hosting (ver mail "Fwd: consulta programador" del 07/09/2026 en su Gmail). Clave NO guardada acá. |
-| Panel de carga de productos | Parte del backend | Los artesanos ya tienen link y clave. |
-| Repo del sitio original | github.com/marianoariassoy/espacioceramica | Marco es colaborador con push (verificar). |
-| Cloudflare Workers / Pages | No se usa para el sitio (0 proyectos en la cuenta del dev) | n/a |
+| Backend, API, panel de productos, base MySQL, mail | Ferozo/DonWeb, cuenta `c2821514`, IP 200.58.111.118 | Marco tiene el panel de hosting. Claves NO guardadas acá. |
+| Panel de carga de productos | `public_html/backend` en Ferozo | Los artesanos ya tienen link y clave. |
+| Repo original | github.com/marianoariassoy/espacioceramica | Verificar que Marco tenga push. |
 
-Entorno de pruebas ya armado por Marco en Ferozo: `backend-test` con su carpeta, base de datos y subdominios. En Cloudflare ya existen los registros `api-test` y `backend-test` (con proxy).
+### DNS visto en Cloudflare (03/11)
+- Con proxy (nube naranja), apuntan a 200.58.111.118: `api`, `api-test`, `backend`, `backend-test`. **Los registros de test ya existen.**
+- Solo DNS: `@` (A a Vercel), `www` y `weekend` (CNAME a Vercel), `ftp` y `mail` (A y AAAA), `mx1`, MX, SPF (hostmar), DKIM, DMARC (`p=none`), TXT `_vercel`.
+- Aviso de Cloudflare: la IP del servidor queda parcialmente expuesta porque `ftp` y `mail` comparten IP sin proxy. No urgente; el correo y el FTP no pueden ir con proxy.
+- `weekend.espacioceramicapatagonia.com` apunta a otro proyecto de Vercel: preguntar qué es.
+
+## Qué hay en la PC de Marco (`...\2026\Espacio Cerámica`)
+- `Dev/Originales/backup-c2821514-...tar.gz` (127 MB): backup completo del hosting. Adentro `public_html.tar.gz` con **525 archivos del backend**: panel admin (`products.php`, `presentaciones.php`, `about.php`, `horns.php`, `galleries.php`, `voluntarios.php`, `images.php`), API (`api/index.php`, `api/apis.php`, micro-framework Flight) y helpers. **El código del backend y del panel SÍ lo tenemos.**
+- `Dev/*.md`: hoja de ruta, plan general, spec de handoff, mensaje de pedido de accesos (07/09), contexto comercial.
+- `Dev/Test/`: endpoint `POST /order/create` y SQL de tablas `orders` / `order_items`. Copia sin claves en `docs/backend/` de este repo.
+- Archivos `.txt` con claves (Ferozo, FTP, base de test, GitHub). Son sensibles: no copiar al repo. Recomendación: pasarlas a un gestor de claves y revocar el token de GitHub que está en texto plano si alguna vez se compartió.
+- Falta en este documento y se completó acá: la existencia del backup, de `backend-test` (carpeta, base `c2821514_ec_test`, FTP acotado) y del endpoint de stock ya escrito.
 
 ## Hallazgos del código
-- La tabla `items` (dump en `sql/c2760245_ec.sql`) ya tiene campo `stock`. El sitio lo usa: muestra "Sin stock" y limita el carrito. Falta confirmar si el panel permite cargarlo.
-- Al comprar no se descuenta stock: el checkout solo manda mails (`/api/send-mail`) y no escribe en la base. Hay que construirlo en el backend.
-- El mail de pedido envía confirmación al comprador y aviso a espacioceramicapatagonia@gmail.com (fijo en el código). El remitente hoy sale de una casilla Ferozo del dev.
-- `next.config.ts` tiene un `remotePatterns` heredado de otro proyecto (backend.ligadecapitanes.com.ar): revisar de dónde salen realmente las imágenes.
-- El dump SQL solo trae 5 tablas (authors, categories, images, items, user), pero el sitio consulta más endpoints (intros, galleries, horns, volunteers, about): el dump está incompleto o desactualizado.
+- `items` ya tiene `stock`. El panel (`products.php`) **ya permite cargarlo**, y la API lo expone. Antes no se sabía.
+- Al comprar no se descuenta stock: el checkout solo manda mails.
+- La API (`api/apis.php`) tiene 8 rutas, todas GET. No hay endpoints de escritura en producción.
+- No existe tabla de pedidos.
+- Seguridad (avisar, fuera de alcance inmediato): la tabla `user` guarda la clave del panel en texto plano; `products.php` arma el SQL concatenando texto (riesgo de inyección SQL).
+- `api-test.espacioceramicapatagonia.com` **ya responde** (probado con lecturas GET, devuelve categorías).
+- `next.config.ts` tiene un `remotePatterns` heredado de otro proyecto: revisar de dónde salen las imágenes.
+- El dump `sql/c2760245_ec.sql` es viejo; el sitio usa más tablas. La base real está en el backup.
 
-## Decisiones de Marco
-- Marco pasa a ser el dev del sitio.
-- Remitente y aviso de compras: usar espacioceramicapatagonia@gmail.com con clave de aplicación de Gmail (requiere verificación en dos pasos). No usar la casilla Ferozo del dev ni el mail personal de Marco.
-- Entorno de prueba del frontend: proyecto Vercel propio de Marco conectado a este fork, URL `*.vercel.app`, apuntando a `api-test`. Sin SMTP real en la prueba. PayPal en sandbox.
-- Pedir lo mínimo posible al dev. Mensaje propuesto al dev: (1) código del backend y del panel; (2) acceso a Ferozo y a Vercel, o que él publique los cambios cuando estén listos; accesos para merino.marco.c@gmail.com y espacioceramicapatagonia@gmail.com.
-- Para talleres: si no se consigue el código del backend, construir un backend propio chico con panel solo para talleres.
+## Respuestas a las preguntas abiertas
+1. **¿Está el backend en Ferozo?** Sí, y ya tenemos copia completa en el backup. Se puede editar sin el dev.
+2. **¿Quién tiene el dominio?** Sigue sin respuesta. Dato a buscar: en el panel de Ferozo, sección Dominios, o con consulta WHOIS (el registrador figura ahí).
+3. **¿Vercel del dev permite miembros?** Sin respuesta; hay que preguntar al dev qué plan tiene.
+4. **Valores públicos de `NEXT_PUBLIC_API_URL`** y PayPal: se ven en Network del sitio en vivo. Casi seguro `https://api.espacioceramicapatagonia.com`.
+5. **Carpeta de Marco:** revisada, ver arriba.
 
-## Preguntas abiertas
-1. ¿Están en el hosting de Ferozo los archivos del backend (carpetas `api` o `backend`) y phpMyAdmin? Si sí, se puede descargar el código y editarlo, y ya no hace falta pedírselo al dev.
-2. ¿Quién tiene registrado el dominio?
-3. ¿El plan de Vercel del dev permite sumar miembros? (Si es gratuito, probablemente no.)
-4. Valores públicos reales de `NEXT_PUBLIC_API_URL` y del client id de PayPal: se ven en la pestaña Network del sitio en vivo.
-5. ¿Qué hay en `C:\Users\Usuario\Documents\2026\Espacio Cerámica` (la PC de Marco)? Revisar por información faltante.
+## ¿Qué publicamos solos y qué depende del dev?
+| Pieza | ¿Solos? | Qué falta |
+|---|---|---|
+| Backend (API y panel) | **Sí** | Nada. Código completo, backup hecho, `backend-test` y DNS de test listos. Se publica por FTP o administrador de archivos de Ferozo. |
+| Base de datos | **Sí** | Nada. phpMyAdmin en Ferozo; probar primero en `c2821514_ec_test`. |
+| Mail de pedidos | Sí | Clave de aplicación de Gmail para espacioceramicapatagonia@gmail.com. |
+| Frontend (Vercel) | **No** | Acceso al proyecto Vercel, o que el dev publique el PR. |
+| Dominio | **No** | Saber quién lo registró. |
+| DNS | Parcial | Confirmar que el rol de Marco en Cloudflare permite editar. |
 
-## ¿Se puede publicar sin el dev?
-- **Backend:** sí, probablemente, con el panel de Ferozo (administrador de archivos o FTP y phpMyAdmin), si el código está ahí. Probar primero en `backend-test`.
-- **Frontend:** hoy no, porque el proyecto de Vercel es del dev. Opciones: (a) que el dev invite a Marco; (b) que el dev publique un PR; (c) montar un proyecto Vercel propio y apuntar el dominio ahí desde Cloudflare (requiere poder editar DNS y verificar el dominio; es un cambio en producción, hacerlo coordinado y con confirmación).
-- **Dominio:** depende de quién lo registró.
+Mensaje corto al dev:
+> Hola Mariano. Para publicar los cambios del sitio sin molestarte cada vez, ¿podés invitar a merino.marco.c@gmail.com y espacioceramicapatagonia@gmail.com al proyecto de Vercel (y decirme en qué registrador está el dominio)? Si preferís, también podés mergear los PR que te mande. Gracias.
 
-## Próximos pasos sugeridos
-1. Revisar la carpeta de Marco y completar las preguntas abiertas.
-2. Entrar al panel de Ferozo y listar qué hay en las carpetas de `api`, `backend`, `api-test` y `backend-test`.
-3. Crear el proyecto Vercel de prueba conectado a este fork (variables: `NEXT_PUBLIC_API_URL` apuntando a api-test, `NEXT_PUBLIC_PAYPAL_CLIENT_ID` sandbox).
-4. Diseñar el control de stock y la sección de talleres (campos del taller por definir: nombre, fecha, cupos, precio, fotos, descripción, es/en).
-5. Recién con eso, decidir con el dev: acceso a Vercel o publicación por PR.
+## Propuesta: stock automático y talleres (probar siempre en `backend-test`)
+
+### Stock con descuento automático
+- Ya hecho en test (sin probar): `docs/backend/orders_schema.sql` y `docs/backend/order-create.php.txt`. Valida y descuenta stock dentro de una transacción con bloqueo de fila, y guarda el pedido.
+- **Problemas a resolver antes de publicar:**
+  1. El endpoint es público y sin autenticación: cualquiera podría vaciar el stock. Exigir un token secreto en un header (guardado en Vercel y en el servidor), y que lo llame solo el servidor de Next.js, nunca el navegador.
+  2. Hoy marca el pedido como `approved` siempre. Para transferencia debería quedar `pendiente` (y descontar o reservar según se decida), y pasar a `approved` al confirmarse el pago.
+  3. Cambiar `send-mail` del frontend para llamar al endpoint antes de mandar el mail, y mostrar "Sin stock" si falla.
+  4. El descuento solo cubre lo que pase por la web. Ventas en persona se siguen ajustando a mano desde el panel.
+- Orden: probar en `api-test` con un producto de prueba, luego frontend de prueba en Vercel propio, y recién después copiar a producción.
+
+### Sección de talleres
+- Tabla `talleres` (nombre, nombre_en, descripción, descripción_en, fecha, cupos, precio_ars, precio_usd, imagen, slug, activo).
+- Panel `talleres.php` calcado de `products.php` (usar consultas preparadas, no concatenar).
+- Rutas GET `/talleres/@lang` y `/taller/@slug/@lang` en la API.
+- Página nueva en el frontend. Primero todo en `backend-test`.
+
+## Flujo de trabajo para no romper producción
+1. **Backend:** copia de seguridad (ya hay una del 07/09; hacer otra antes de publicar) → cambiar `backend-test` y su base de test → probar con `api-test` → recién ahí repetir los mismos cambios en `backend` y en la base real. Los cambios de base (tablas nuevas) se aplican primero en test, después en real.
+2. **Frontend:** rama en este fork → PR → Vercel propio de Marco con `NEXT_PUBLIC_API_URL` apuntando a `api-test` → aprobado → PR al repo original → el dueño del Vercel de producción publica.
+3. **DNS:** no tocar sin confirmación de Marco.
+
+## Pendientes
+- [ ] Probar `POST /order/create` en `api-test` (no se pudo desde esta sesión: bloqueado por permisos).
+- [ ] Agregar token de seguridad al endpoint.
+- [ ] Crear proyecto Vercel propio conectado a este fork.
+- [ ] Confirmar rol en Cloudflare y registrador del dominio.
+- [ ] Enviar el mensaje al dev.
+- [ ] Revisar de dónde salen las imágenes (`remotePatterns`).
+- [ ] Rotar la clave de la base y del panel (texto plano) cuando Marco decida.
