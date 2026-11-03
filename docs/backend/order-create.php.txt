@@ -7,7 +7,8 @@ if (file_exists(__DIR__ . '/order_token.php')) {
 }
 
 Flight::route('POST /order/create', function () {
-  $token_recibido = Flight::request()->getHeader('X-Order-Token');
+  // Flight viejo (sin getHeader): se lee el header directo de PHP.
+  $token_recibido = $_SERVER['HTTP_X_ORDER_TOKEN'] ?? '';
   if (!defined('ORDER_API_TOKEN') || !$token_recibido || !hash_equals(ORDER_API_TOKEN, $token_recibido)) {
     Flight::json(['success' => false, 'error' => 'No autorizado'], 401);
     return;
