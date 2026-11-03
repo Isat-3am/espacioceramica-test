@@ -52,6 +52,21 @@ function campo($col, $label, $tipo, $filas, $results, $lang)
 
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+// Orden manual: la posicion 1 es la primera que se ve en la web.
+// Se guarda en la columna `top` (el valor mas alto va primero), renumerando todas.
+function reordenar($pdo, $id, $posicion)
+{
+  $ids = $pdo->query('SELECT id FROM residencias ORDER BY top DESC, id DESC')->fetchAll(PDO::FETCH_COLUMN);
+  $ids = array_values(array_filter($ids, fn($x) => intval($x) !== intval($id)));
+  $posicion = max(1, min(count($ids) + 1, intval($posicion)));
+  array_splice($ids, $posicion - 1, 0, [intval($id)]);
+  $n = count($ids);
+  $statement = $pdo->prepare('UPDATE residencias SET top = ? WHERE id = ?');
+  foreach ($ids as $i => $rid) {
+    $statement->execute([$n - $i, intval($rid)]);
+  }
+}
+
 function guardar_imagen($data)
 {
   // create_image.php lee $data, $image y $width del ambito actual.
@@ -82,7 +97,7 @@ if (isset($_POST['form'])) {
   $form_url = trim($_POST['form_url'] ?? '');
   // Solo se aceptan links http/https (el link se muestra en la web publica).
   $valores['form_url'] = preg_match('#^https?://#i', $form_url) ? $form_url : '';
-  $valores['top'] = intval($_POST['top'] ?? 0);
+  $posicion = intval($_POST['posicion'] ?? 1);
   $valores['active'] = isset($_POST['active']) ? 1 : 0;
 
   if (!empty($_FILES['userfile1']['name'])) {
@@ -109,6 +124,8 @@ if (isset($_POST['form'])) {
         $statement = $pdo->prepare($sql);
         $statement->execute(array_merge(array_values($valores), [$id]));
       }
+
+      reordenar($pdo, $id, $posicion);
 
       // Fotos de la galeria que se marcaron para borrar
       if (!empty($_POST['del_img']) && is_array($_POST['del_img'])) {
@@ -164,10 +181,25 @@ if (isset($_POST['form'])) {
   $gallery = $statement->fetchAll();
 } else {
   $title_sec = "Residencias";
-  $statement = $pdo->prepare('SELECT * FROM residencias ORDER BY top DESC, fecha_inicio DESC');
+  $statement = $pdo->prepare('SELECT * FROM residencias ORDER BY top DESC, id DESC');
   $statement->execute();
   $results = $statement->fetchAll();
   $total = count($results);
+}
+
+// Opciones del selector de posicion (solo cuando se muestra el formulario).
+if (isset($_GET['mod'])) {
+  $cant = intval($pdo->query('SELECT COUNT(*) FROM residencias')->fetchColumn());
+  $opciones = $action == 'Agregar' ? $cant + 1 : max(1, $cant);
+  if (isset($_POST['posicion'])) {
+    $pos_actual = intval($_POST['posicion']);
+  } else if ($action == 'Agregar') {
+    $pos_actual = $opciones;
+  } else {
+    $ids = $pdo->query('SELECT id FROM residencias ORDER BY top DESC, id DESC')->fetchAll(PDO::FETCH_COLUMN);
+    $idx = array_search((string)$id_select, array_map('strval', $ids), true);
+    $pos_actual = $idx === false ? 1 : $idx + 1;
+  }
 }
 require("includes/head.php");
 
@@ -237,9 +269,16 @@ require("includes/head.php");
             </div>
 
             <div class="col col-12 col-md-6 pe-md-3 mb-3">
-              <label class="form-label">Top</label>
-              <input type="number" name="top" class="form-control bg-transparent text-white mb-2" value="<?php echo h($results['top'] ?? 0) ?>" />
-              <div class="row text-secondary">Número de prioridad: el más alto aparece primero.</div>
+              <label class="form-label">Posición en la web</label>
+              <select name="posicion" class="form-select bg-transparent text-white mb-2">
+                <?php
+                for ($p = 1; $p <= $opciones; $p++) {
+                  $etiqueta = $p == 1 ? 'Posición 1 (la primera)' : 'Posición ' . $p;
+                  echo '<option value="' . $p . '"' . ($p == $pos_actual ? ' selected' : '') . '>' . $etiqueta . '</option>';
+                }
+                ?>
+              </select>
+              <div class="row text-secondary">Las demás residencias se acomodan solas.</div>
             </div>
             <div class="col col-12 col-md-6 mb-3">
               <label class="form-label">Visible en la web</label>
@@ -277,6 +316,7 @@ require("includes/head.php");
           <table class="table table-dark table-hover">
             <thead>
               <tr class="text-secondary">
+                <th scope="col">Pos.</th>
                 <th scope="col">Residencia</th>
                 <th scope="col">Inicio</th>
                 <th scope="col">Fin</th>
@@ -286,16 +326,17 @@ require("includes/head.php");
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($results as $row) { ?>
+              <?php foreach ($results as $pos => $row) { ?>
                 <tr>
+                  <td valign="middle"><?php echo $pos + 1 ?></td>
                   <td valign="middle" class="text-primary"><strong><?php echo h($row['title']) ?></strong></td>
                   <td valign="middle"><?php echo h($row['fecha_inicio'] ?: '---') ?></td>
                   <td valign="middle"><?php echo h($row['fecha_fin'] ?: '---') ?></td>
                   <td valign="middle"><?php echo h($row['price_ars']) ?></td>
                   <td valign="middle"><?php echo $row['active'] ? 'Activa' : '<span class="text-secondary">Oculta</span>' ?></td>
                   <td valign="middle" align="right">
-                    <a href="?mod=1&edit=1&i=<?php echo intval($row['id']) ?>" class="circle bg-transparent"><i class="bi bi-file-earmark-text"></i></a>
-                    <a href="#" class="circle bg-transparent delete" data-id="<?php echo intval($row['id']) ?>"><i class="bi bi-trash-fill"></i></a>
+                    <a href="?mod=1&edit=1&i=<?php echo intval($row['id']) ?>" class="circle bg-transparent" title="Editar" aria-label="Editar"><i class="bi bi-file-earmark-text"></i></a>
+                    <a href="#" class="circle bg-transparent delete" data-id="<?php echo intval($row['id']) ?>" title="Eliminar" aria-label="Eliminar"><i class="bi bi-trash-fill"></i></a>
                   </td>
                 </tr>
               <?php } ?>

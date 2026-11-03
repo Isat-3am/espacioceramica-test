@@ -33,9 +33,8 @@ function residencia_data($row, $lang)
 }
 
 Flight::route('GET /residencias/@lang', function ($lang) {
-  // Solo las activas. Las que ya terminaron quedan al final; sin fecha, al ultimo.
-  $sql = 'SELECT * FROM residencias WHERE active = 1
-          ORDER BY (fecha_inicio IS NULL), (fecha_fin < CURDATE()), fecha_inicio ASC, top DESC';
+  // Solo las activas, en el orden que eligio la artesana en el panel (posicion 1 primero).
+  $sql = 'SELECT * FROM residencias WHERE active = 1 ORDER BY top DESC, id DESC';
   $statement = Flight::db()->prepare($sql);
   $statement->execute();
   $items = [];
