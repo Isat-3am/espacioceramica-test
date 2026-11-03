@@ -86,3 +86,12 @@ Mensaje corto al dev:
 - [ ] Enviar el mensaje al dev.
 - [ ] Revisar de dónde salen las imágenes (`remotePatterns`).
 - [ ] Rotar la clave de la base y del panel (texto plano) cuando Marco decida.
+
+## Avance (03/11/2026)
+- [x] Stock: `POST /order/create` con token (`X-Order-Token`) probado en `api-test`: descuenta stock, guarda el pedido y rechaza compras sin stock. Falta llamarlo desde el frontend y cargar `ORDER_API_TOKEN` en Vercel.
+- [x] Talleres pasa a ser **Residencias** (el Linktree y los formularios de Google hablan de residencias; la sección de la página dice "Pasantías", a unificar con la artesana). Código en `docs/backend/residencias/`: tablas `residencias` y `residencia_images`, panel `residencias.php`, rutas `GET /residencias/@lang` y `GET /residencia/@slug/@lang`. Subido a `backend-test`; **falta crear las tablas en `c2821514_ec_test`** (phpMyAdmin) y probar.
+- [x] `docs/design.md`: criterios de diseño y propuesta de la página de Residencias.
+- [ ] Frontend de Residencias: botones en Pasantías y página `/residencias/[slug]` con el Google Form incrustado.
+- [ ] Proyecto Vercel propio conectado a este fork (con `api-test`).
+- [ ] Mercado Pago: primero con una aplicación de prueba en la cuenta de Marco, después con la de la artesana.
+- [ ] Confirmar con la artesana: nombre de la sección, si se muestran los cupos, si el stock va en la lista de la tienda.
