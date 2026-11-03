@@ -1,4 +1,18 @@
+// Requiere un archivo api/order_token.php (NO va en el repo) con:
+//   <?php define('ORDER_API_TOKEN', 'un-texto-largo-y-secreto');
+// El mismo valor va en Vercel como ORDER_API_TOKEN (solo servidor, sin NEXT_PUBLIC_).
+// Si el archivo no existe, el endpoint se niega a funcionar.
+if (file_exists(__DIR__ . '/order_token.php')) {
+  require_once __DIR__ . '/order_token.php';
+}
+
 Flight::route('POST /order/create', function () {
+  $token_recibido = Flight::request()->getHeader('X-Order-Token');
+  if (!defined('ORDER_API_TOKEN') || !$token_recibido || !hash_equals(ORDER_API_TOKEN, $token_recibido)) {
+    Flight::json(['success' => false, 'error' => 'No autorizado'], 401);
+    return;
+  }
+
   $body = json_decode(Flight::request()->getBody(), true);
 
   $comprador = $body['comprador'] ?? [];
@@ -8,6 +22,8 @@ Flight::route('POST /order/create', function () {
   $direccion = sanitize($comprador['direccion'] ?? '');
   $medio_pago = sanitize($body['medio_pago'] ?? '');
   $carrito = $body['items'] ?? [];
+  // El stock se descuenta igual; solo cambia el estado. Transferencia queda pendiente hasta confirmar el pago.
+  $estado = in_array($body['estado'] ?? '', ['pendiente', 'approved'], true) ? $body['estado'] : 'pendiente';
 
   if (!$nombre || !$email || !$medio_pago || empty($carrito)) {
     Flight::json(['success' => false, 'error' => 'Faltan datos del pedido'], 400);
@@ -63,7 +79,7 @@ Flight::route('POST /order/create', function () {
       'INSERT INTO orders (comprador_nombre, comprador_email, comprador_telefono, comprador_direccion, total, estado, medio_pago)
        VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
-    $statement->execute([$nombre, $email, $telefono, $direccion, $total, 'approved', $medio_pago]);
+    $statement->execute([$nombre, $email, $telefono, $direccion, $total, $estado, $medio_pago]);
     $order_id = $db->lastInsertId();
 
     $statement = $db->prepare(
