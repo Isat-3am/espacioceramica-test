@@ -1,0 +1,7 @@
+<?php
+// ---- Agregar AL FINAL de includes/footer.php (despues del </script> que ya tiene) ----
+// Traduccion automatica es -> en, solo en los paneles que tienen casillas en los dos idiomas.
+if (isset($file_main) && in_array($file_main, ['products', 'horns', 'about', 'presentaciones'], true)) {
+  include __DIR__ . '/traducir_auto.php';
+}
+?>

@@ -106,7 +106,7 @@ Mensaje corto al dev:
 - Pagos de prueba: la compra se hace con la cuenta de prueba `EspacioCeramicaTest` (credenciales en `Dev\MERCADOPAGO_TEST.txt`, fuera del repo).
 
 ### Pendiente
-- [ ] **Traducción automática en los paneles Productos, Hornos, Nosotros y Presentaciones:** aprobada por Marco, todavía no hecha (no en Voluntarios ni Galerías). Probar primero en `backend-test`.
+- [x] **Traducción automática en los paneles Productos, Hornos, Nosotros y Presentaciones:** hecha en `backend-test` (guion `includes/traducir_auto.php` cargado desde `includes/footer.php`; no en Voluntarios ni Galerías). **Falta probarla con sesión en el panel** y, para el sitio real, repetir los pasos de `docs/backend/traduccion/LEEME.md`.
 - [ ] Probar pago rechazado (titular `OTHE`), pendiente (`CONT`) y un aviso repetido (no debe descontar dos veces).
 - [ ] **Pedir a los artesanos** (videollamada de 20 min): crear la aplicación de Mercado Pago y compartir credenciales con la cuenta de Developers de Marco (de prueba y después de producción), sin usuario ni contraseña. Guía: `guia-mercadopago-espacio-ceramica.html`.
 - [ ] **PayPal Business:** cuando se quiera integrar, armar con los artesanos una guía en PDF con la documentación vigente de PayPal (aplicación con client id y secret, guardados en el backend como los de Mercado Pago).
