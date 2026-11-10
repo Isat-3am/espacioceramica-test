@@ -102,6 +102,7 @@ Mensaje corto al dev:
 - **Residencias, etapa 1:** panel con título, reseña, link de Google Forms y posición; botones en Pasantías; página en dos columnas (título y reseña a la izquierda, formulario a la derecha; en celular, en fila). Etapa 2 (campos completos, fotos, traducción) **en pausa y sin presupuestar**: `docs/backend/residencias-pausado/`.
 - **Newsletter:** página con la suscripción de Substack incrustada (fondo igual al de la página), lista de las últimas 6 publicaciones (opción A) y panel editable (título y descripción en español e inglés, link de Substack) con **traducción automática** a inglés (DeepL).
 - **PayPal oculto** en el checkout (`PAYPAL_ENABLED = false`). Hoy era solo un link fijo a `paypal.me`, sin integración.
+- Base de test: no hace falta restaurar el stock ni borrar los pedidos de prueba (decisión de Marco).
 - Pagos de prueba: la compra se hace con la cuenta de prueba `EspacioCeramicaTest` (credenciales en `Dev\MERCADOPAGO_TEST.txt`, fuera del repo).
 
 ### Pendiente
@@ -114,6 +115,5 @@ Mensaje corto al dev:
 - [ ] Transferencia bancaria: su mail sigue saliendo por `/api/send-mail` con el SMTP del dev. Falta pasarlo al backend (con cuidado de que no sirva para enviar spam).
 - [ ] Decisiones con los artesanos: nombre de la sección (Residencias o Pasantías), si el stock va en la lista de la tienda, y si las residencias llevan título y reseña en inglés.
 - [ ] Presupuesto: el trabajo de $50.000 (formulario de pasantías) cubre el formulario incrustado; la lista de publicaciones de Substack, la etapa 2 de residencias y la traducción en paneles son ampliaciones.
-- [ ] Limpieza de la base de test (stock de los productos de prueba y `DELETE` de `orders` y `order_items`).
 - [ ] Cerrar el PR #11 (aviso de compra configurable): quedó obsoleto con el pago en el backend.
 - [ ] Siguen en manos del dev: dominio, cuenta de Cloudflare y proyecto de Vercel del sitio real.
