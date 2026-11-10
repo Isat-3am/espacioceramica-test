@@ -1,7 +1,10 @@
 import nodemailer from "nodemailer";
 import { formatPrice } from "@/utils/formatPrice";
 
-export const OWNER_EMAIL = "espacioceramicapatagonia@gmail.com";
+// Casilla que recibe el aviso de cada compra. En pruebas se redirige con ORDER_NOTIFY_EMAIL
+// para no molestar a los duenos con compras de prueba.
+export const OWNER_EMAIL =
+  process.env.ORDER_NOTIFY_EMAIL || "espacioceramicapatagonia@gmail.com";
 
 export type MailBuyer = {
   name: string;
