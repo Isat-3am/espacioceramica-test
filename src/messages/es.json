@@ -5,6 +5,7 @@
     "title-3": "Residencias",
     "title-4": "Nosotros",
     "title-5": "Contacto",
+    "title-6": "Newsletter",
     "cart": "Carrito",
     "menu": "Menú",
     "close": "Cerrar"
@@ -46,6 +47,11 @@
     "mpPending": "Tu pago está pendiente de confirmación.\nCuando se acredite te enviaremos un email.",
     "mpFailure": "No se pudo completar el pago.\nNo se hizo ningún cargo. Podés intentar de nuevo.",
     "mpRetry": "Volver al pedido"
+  },
+  "Newsletter": {
+    "title": "Newsletter",
+    "text": "Suscribite para recibir la crónica del taller y las novedades y promociones de la tienda.",
+    "open": "Ver el boletín en Substack"
   },
   "Residencias": {
     "register": "Inscripción",
