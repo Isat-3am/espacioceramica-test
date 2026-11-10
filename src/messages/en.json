@@ -51,7 +51,10 @@
   "Newsletter": {
     "title": "Newsletter",
     "text": "Subscribe to receive the workshop's chronicle, news and store promotions.",
-    "open": "Read the newsletter on Substack"
+    "open": "Read the newsletter on Substack",
+    "latest": "Latest posts",
+    "read": "Read on Substack",
+    "all": "See all on Substack"
   },
   "Residencias": {
     "register": "Registration",
