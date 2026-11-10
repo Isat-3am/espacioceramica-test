@@ -32,7 +32,9 @@ export async function GET(req: Request) {
       },
     );
     if (!res.ok) throw new Error("Substack respondio " + res.status);
-    const data: SubstackPost[] = await res.json();
+    const json = await res.json();
+    // Substack devuelve la lista directa o dentro de { posts: [...] }.
+    const data: SubstackPost[] = Array.isArray(json) ? json : (json?.posts ?? []);
 
     const posts = data
       .filter((p) => p.audience === "everyone")
