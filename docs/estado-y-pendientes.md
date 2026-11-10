@@ -93,14 +93,27 @@ Mensaje corto al dev:
 - [x] `docs/design.md`: criterios de diseño del sitio.
 
 ## Avance (10/11/2026)
-- [x] **Residencias, etapa 1 (alcance chico, decidido por Marco):** solo título y link del formulario de Google. Panel `residencias.php` mínimo, rutas `GET /residencias/@lang` y `GET /residencia/@slug/@lang`, botones "Inscripción" en Pasantías y página `/residencias/[slug]` con el formulario incrustado. Código en `docs/backend/residencias/`. Subido a `backend-test` y probado en la API; la residencia de prueba ya aparece. Compila.
-- [x] **Residencias, etapa 2 en pausa:** panel completo (todos los campos, traducción DeepL, fotos hasta 6, posición), probado en `backend-test`. Guardado en `docs/backend/residencias-pausado/` (ver `LEEME.md`). **Sin presupuestar**: se retoma cuando se acuerde con los dueños. Quedan subidos a `backend-test` `traducir.php` y `config_deepl.php` (con la clave de DeepL), sin uso.
-- [x] **Mercado Pago (Checkout Pro):** aplicación de prueba `EspacioCeramicaTest` creada en la cuenta de Marco, con vendedor y comprador de prueba. Código en el PR #7 (`/api/mp/create-preference`, `/api/mp/webhook`, página de retorno, opción en el checkout). La creación del pago se probó contra Mercado Pago y funciona; el stock lo descuenta el webhook. Detalle y límites en `docs/mercadopago.md`.
-- [x] **Pago completo probado (10/11/2026) en el sitio de prueba de Vercel:** compra del Jarrón de porcelana con tarjeta de prueba (titular APRO). El aviso de Mercado Pago llegó al webhook, se verificó el pago, se registró el pedido y el stock bajó de 1 a 0 en `api-test`. Columna `payment_id` creada en `c2821514_ec_test` y `order-create` actualizado en `backend-test`.
-- [ ] **Mail de pedidos:** el webhook intentó mandar el mail pero falló por falta de credenciales SMTP (esperado en la prueba). Falta definir la casilla: decisión previa de Marco, usar espacioceramicapatagonia@gmail.com con clave de aplicación de Gmail; hoy el código usa el SMTP de Ferozo (`mda07.ferozo.com`), habrá que adaptarlo.
-- [ ] Probar los casos de pago rechazado (titular `OTHE`) y pendiente (`CONT`), y que un aviso repetido no descuente dos veces.
-- [x] **Proyecto Vercel propio creado** (cuenta gratuita de Marco, equipo `merinomarcoc-2448s-projects`, proyecto `espacioceramica-test`, enlazado al fork). Variables: `NEXT_PUBLIC_API_URL` (api-test), `MP_ACCESS_TOKEN` y `ORDER_API_TOKEN` (sensibles). Protección de Vercel desactivada para que Mercado Pago pueda avisar y la artesana vea el sitio. Primera publicación (rama `feat/residencias-minimo`) responde bien; crear el pago funciona desde ahí. Conectado también el conector de Vercel (MCP). Cada push a una rama del fork publica solo.
-- [ ] Probar el panel de residencias mínimo en `backend-test` (cargar, editar, borrar).
-- [ ] Mercado Pago real: credenciales de la cuenta de la artesana, después de que funcione la prueba.
-- [ ] Confirmar con la artesana: nombre de la sección (Residencias o Pasantías) y si el stock va en la lista de la tienda.
-- [ ] Presupuesto: el trabajo "formulario de inscripción a pasantías" ($50.000) cubre probablemente el formulario incrustado; el catálogo completo de residencias no está presupuestado.
+
+### Hecho y probado
+- **Sitio de prueba público:** https://espacioceramica-test.vercel.app (cuenta gratuita de Vercel de Marco, proyecto `espacioceramica-test`, rama `main` del fork; cada push a una rama genera una vista previa). Protección de Vercel desactivada. `NEXT_PUBLIC_API_URL` apunta a `api-test`. Conector de Vercel (MCP) conectado.
+- **Pago con Mercado Pago (Checkout Pro) en el backend propio**, sin claves en Vercel: `api/pagos.php` en Ferozo crea el pago (precio y stock salen de la base), recibe el aviso de Mercado Pago, registra el pedido, descuenta stock y manda los mails. **Probado de punta a punta** con la tarjeta de prueba: pago aprobado, aviso al backend (pasó Cloudflare), stock bajó y llegaron los dos mails. Detalle, límites y pasos para producción en `docs/mercadopago.md`.
+- **Mails desde el servidor** (`mail()` del hosting, desde `pedidos@espacioceramicapatagonia.com`, sin claves de Gmail). Salen: confirmación al comprador y aviso a `NOTIFY_EMAIL` (hoy el mail de Marco; en producción, el de los artesanos).
+- **Ficha de producto:** fila de Stock y columna de datos fija y siempre visible (solo se mueven las fotos).
+- **Residencias, etapa 1:** panel con título, reseña, link de Google Forms y posición; botones en Pasantías; página en dos columnas (título y reseña a la izquierda, formulario a la derecha; en celular, en fila). Etapa 2 (campos completos, fotos, traducción) **en pausa y sin presupuestar**: `docs/backend/residencias-pausado/`.
+- **Newsletter:** página con la suscripción de Substack incrustada (fondo igual al de la página), lista de las últimas 6 publicaciones (opción A) y panel editable (título y descripción en español e inglés, link de Substack) con **traducción automática** a inglés (DeepL).
+- **PayPal oculto** en el checkout (`PAYPAL_ENABLED = false`). Hoy era solo un link fijo a `paypal.me`, sin integración.
+- Base de test: no hace falta restaurar el stock ni borrar los pedidos de prueba (decisión de Marco).
+- Pagos de prueba: la compra se hace con la cuenta de prueba `EspacioCeramicaTest` (credenciales en `Dev\MERCADOPAGO_TEST.txt`, fuera del repo).
+
+### Pendiente
+- [ ] **Traducción automática en los paneles Productos, Hornos, Nosotros y Presentaciones:** aprobada por Marco, todavía no hecha (no en Voluntarios ni Galerías). Probar primero en `backend-test`.
+- [ ] Probar pago rechazado (titular `OTHE`), pendiente (`CONT`) y un aviso repetido (no debe descontar dos veces).
+- [ ] **Pedir a los artesanos** (videollamada de 20 min): crear la aplicación de Mercado Pago y compartir credenciales con la cuenta de Developers de Marco (de prueba y después de producción), sin usuario ni contraseña. Guía: `guia-mercadopago-espacio-ceramica.html`.
+- [ ] **PayPal Business:** cuando se quiera integrar, armar con los artesanos una guía en PDF con la documentación vigente de PayPal (aplicación con client id y secret, guardados en el backend como los de Mercado Pago).
+- [ ] **Publicar en el sitio real** (ver `docs/mercadopago.md`): backup nuevo; en la base real crear `orders`, `order_items` y `payment_id`, `residencias` (con `text` y `top`); la tabla `newsletter` se crea sola; subir `pagos.php`, `config_pagos.php` con el token real y las direcciones reales, paneles `residencias.php` y `newsletter.php`, enlaces del menú y rutas de `apis.php`; frontend: PR al repo original.
+- [ ] **Prueba de publicar desde el repo original:** un cambio mínimo y visible (etiqueta `meta`) por PR a `marianoariassoy/espacioceramica`, para ver si el Vercel del dev publica al fusionar. Solo con confirmación de Marco. Si no, plan A/B/C con el dev (invitación a Vercel, que él publique, o mover el dominio).
+- [ ] Transferencia bancaria: su mail sigue saliendo por `/api/send-mail` con el SMTP del dev. Falta pasarlo al backend (con cuidado de que no sirva para enviar spam).
+- [ ] Decisiones con los artesanos: nombre de la sección (Residencias o Pasantías), si el stock va en la lista de la tienda, y si las residencias llevan título y reseña en inglés.
+- [ ] Presupuesto: el trabajo de $50.000 (formulario de pasantías) cubre el formulario incrustado; la lista de publicaciones de Substack, la etapa 2 de residencias y la traducción en paneles son ampliaciones.
+- [ ] Cerrar el PR #11 (aviso de compra configurable): quedó obsoleto con el pago en el backend.
+- [ ] Siguen en manos del dev: dominio, cuenta de Cloudflare y proyecto de Vercel del sitio real.
