@@ -68,7 +68,7 @@ const Filters = ({
 
   if (open) {
     return (
-      <div className="w-full sticky top-12 flex flex-col mb-4 lg:mb-40 bg-[#f6f6f7] py-2 z-10">
+      <div className="w-full sticky top-12 flex flex-col mb-4 lg:mb-6 bg-[#f6f6f7] py-2 z-10">
         <div className="flex items-center gap-x-4 lg:gap-x-8 flex-wrap">
           <Item
             title={lan === "es" ? "Ver Todo" : "All"}
