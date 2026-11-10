@@ -47,6 +47,13 @@
     "mpFailure": "The payment could not be completed.\nYou were not charged. You can try again.",
     "mpRetry": "Back to your order"
   },
+  "Residencias": {
+    "register": "Registration",
+    "back": "← Residencies",
+    "openForm": "Open the form in a new tab",
+    "loadingForm": "Loading form...",
+    "notFound": "We couldn't find this residency."
+  },
   "Contact": {
     "title": "Contact",
     "name": "Name and surname",

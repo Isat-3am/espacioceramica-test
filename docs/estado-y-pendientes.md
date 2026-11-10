@@ -89,9 +89,16 @@ Mensaje corto al dev:
 
 ## Avance (03/11/2026)
 - [x] Stock: `POST /order/create` con token (`X-Order-Token`) probado en `api-test`: descuenta stock, guarda el pedido y rechaza compras sin stock. Falta llamarlo desde el frontend y cargar `ORDER_API_TOKEN` en Vercel.
-- [x] Talleres pasa a ser **Residencias** (el Linktree y los formularios de Google hablan de residencias; la sección de la página dice "Pasantías", a unificar con la artesana). Código en `docs/backend/residencias/`: tablas `residencias` y `residencia_images`, panel `residencias.php`, rutas `GET /residencias/@lang` y `GET /residencia/@slug/@lang`. Subido a `backend-test`; **falta crear las tablas en `c2821514_ec_test`** (phpMyAdmin) y probar.
-- [x] `docs/design.md`: criterios de diseño y propuesta de la página de Residencias.
-- [ ] Frontend de Residencias: botones en Pasantías y página `/residencias/[slug]` con el Google Form incrustado.
-- [ ] Proyecto Vercel propio conectado a este fork (con `api-test`).
-- [ ] Mercado Pago: primero con una aplicación de prueba en la cuenta de Marco, después con la de la artesana.
-- [ ] Confirmar con la artesana: nombre de la sección, si se muestran los cupos, si el stock va en la lista de la tienda.
+- [x] Talleres pasa a ser **Residencias** (el Linktree y los formularios de Google hablan de residencias; la sección de la página dice "Pasantías", a unificar con la artesana).
+- [x] `docs/design.md`: criterios de diseño del sitio.
+
+## Avance (10/11/2026)
+- [x] **Residencias, etapa 1 (alcance chico, decidido por Marco):** solo título y link del formulario de Google. Panel `residencias.php` mínimo, rutas `GET /residencias/@lang` y `GET /residencia/@slug/@lang`, botones "Inscripción" en Pasantías y página `/residencias/[slug]` con el formulario incrustado. Código en `docs/backend/residencias/`. Subido a `backend-test` y probado en la API; la residencia de prueba ya aparece. Compila.
+- [x] **Residencias, etapa 2 en pausa:** panel completo (todos los campos, traducción DeepL, fotos hasta 6, posición), probado en `backend-test`. Guardado en `docs/backend/residencias-pausado/` (ver `LEEME.md`). **Sin presupuestar**: se retoma cuando se acuerde con los dueños. Quedan subidos a `backend-test` `traducir.php` y `config_deepl.php` (con la clave de DeepL), sin uso.
+- [x] **Mercado Pago (Checkout Pro):** aplicación de prueba `EspacioCeramicaTest` creada en la cuenta de Marco, con vendedor y comprador de prueba. Código en el PR #7 (`/api/mp/create-preference`, `/api/mp/webhook`, página de retorno, opción en el checkout). La creación del pago se probó contra Mercado Pago y funciona; el stock lo descuenta el webhook. Detalle y límites en `docs/mercadopago.md`.
+- [ ] **Falta probar el pago completo:** hace falta el sitio en Vercel (el webhook necesita una URL pública). Antes: ejecutar `docs/backend/orders_add_payment_id.sql` en `c2821514_ec_test` y subir el `order-create` actualizado.
+- [ ] Proyecto Vercel propio conectado a este fork (con `api-test`, `MP_ACCESS_TOKEN`, `ORDER_API_TOKEN`).
+- [ ] Probar el panel de residencias mínimo en `backend-test` (cargar, editar, borrar).
+- [ ] Mercado Pago real: credenciales de la cuenta de la artesana, después de que funcione la prueba.
+- [ ] Confirmar con la artesana: nombre de la sección (Residencias o Pasantías) y si el stock va en la lista de la tienda.
+- [ ] Presupuesto: el trabajo "formulario de inscripción a pasantías" ($50.000) cubre probablemente el formulario incrustado; el catálogo completo de residencias no está presupuestado.

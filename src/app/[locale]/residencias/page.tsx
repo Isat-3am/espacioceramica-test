@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
 import Voluntariados from "./voluntariados";
+import Inscripciones from "./inscripciones";
 import Image from "@/components/Image";
 import Gallery from "@/components/gallery";
 import Modal from "@/components/modal";
@@ -85,6 +86,8 @@ const page = () => {
       <div className="scroll-mt-12" id="pasantias">
         <Intro locale={locale} section={4} />
       </div>
+
+      <Inscripciones locale={locale} />
 
       <Gallery section={2} setFile={setFile} />
 

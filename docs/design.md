@@ -71,7 +71,11 @@ Reglas:
 3. Agregar los textos a `es.json` y `en.json`.
 4. Probarla en celular (375 px) y en escritorio antes de pasarla.
 
-## 8. Residencias (diseño propuesto, pendiente de aprobar)
+## 8. Residencias
+
+**Etapa 1 (hecha, 10/11/2026):** solo título y formulario. En la sección Pasantías de `/residencias` aparece un bloque "Inscripción" con un botón (`ButtonNavigation`) por cada residencia cargada. Cada botón lleva a `/residencias/[slug]`, que muestra el título (`text-3xl lg:text-4xl font-[--lastik-regular] uppercase`), el formulario de Google incrustado y el enlace "Abrir el formulario en una pestaña nueva". El panel carga solo **título** y **link del formulario** (solo se aceptan links de Google Forms). Todo lo demás de esta sección es la **etapa 2, en pausa y sin presupuestar**; el código ya probado está en `docs/backend/residencias-pausado/`.
+
+Diseño propuesto para la etapa 2 (referencia, pendiente de aprobar):
 
 Hoy `/residencias` tiene dos secciones: **Pasantías** (texto fijo y galería) y **Voluntarios** (lista de cuentas de Instagram). La artesana ya puede cambiar las fotos y el texto de Pasantías desde el panel. Voluntarios no cambia.
 

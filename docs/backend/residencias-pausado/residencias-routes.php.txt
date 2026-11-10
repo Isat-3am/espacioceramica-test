@@ -1,0 +1,65 @@
+// Rutas de residencias. Se agregan al final de api/apis.php (solo lectura, GET).
+// $es = true devuelve la version en español; si falta la traduccion en ingles, cae al español.
+
+function residencia_texto($row, $col, $es)
+{
+  if ($es) return $row[$col];
+  return $row[$col . '_en'] !== null && $row[$col . '_en'] !== '' ? $row[$col . '_en'] : $row[$col];
+}
+
+function residencia_data($row, $lang)
+{
+  $es = $lang == 'es';
+  return [
+    'id' => intval($row['id']),
+    'slug' => $row['slug'],
+    'title' => residencia_texto($row, 'title', $es),
+    'text' => residencia_texto($row, 'text', $es),
+    'fecha_inicio' => $row['fecha_inicio'],
+    'fecha_fin' => $row['fecha_fin'],
+    'llegada' => residencia_texto($row, 'llegada', $es),
+    'duracion' => residencia_texto($row, 'duracion', $es),
+    'lugar' => residencia_texto($row, 'lugar', $es),
+    'cupos' => residencia_texto($row, 'cupos', $es),
+    'price_ars' => $row['price_ars'],
+    'price_usd' => $row['price_usd'],
+    'pago' => residencia_texto($row, 'pago', $es),
+    'incluye' => residencia_texto($row, 'incluye', $es),
+    'no_incluye' => residencia_texto($row, 'no_incluye', $es),
+    'condiciones' => residencia_texto($row, 'condiciones', $es),
+    'image' => $row['image'] ? IMAGESURL . $row['image'] : null,
+    'form_url' => $row['form_url'] ?: null,
+  ];
+}
+
+Flight::route('GET /residencias/@lang', function ($lang) {
+  // Solo las activas, en el orden que eligio la artesana en el panel (posicion 1 primero).
+  $sql = 'SELECT * FROM residencias WHERE active = 1 ORDER BY top DESC, id DESC';
+  $statement = Flight::db()->prepare($sql);
+  $statement->execute();
+  $items = [];
+  foreach ($statement->fetchAll() as $row) {
+    $items[] = residencia_data($row, $lang);
+  }
+  Flight::json($items ?: null);
+});
+
+Flight::route('GET /residencia/@slug/@lang', function ($slug, $lang) {
+  $statement = Flight::db()->prepare('SELECT * FROM residencias WHERE slug = ? AND active = 1');
+  $statement->execute([$slug]);
+  $row = $statement->fetch();
+  if (!$row) {
+    Flight::json(null);
+    return;
+  }
+  $data = residencia_data($row, $lang);
+
+  $statement = Flight::db()->prepare('SELECT id, image FROM residencia_images WHERE residencia_id = ? ORDER BY top DESC, id ASC');
+  $statement->execute([$row['id']]);
+  $images = [];
+  foreach ($statement->fetchAll() as $img) {
+    $images[] = ['id' => intval($img['id']), 'image' => IMAGESURL . $img['image']];
+  }
+  $data['images'] = $images;
+  Flight::json($data);
+});

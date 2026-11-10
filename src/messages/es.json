@@ -47,6 +47,13 @@
     "mpFailure": "No se pudo completar el pago.\nNo se hizo ningún cargo. Podés intentar de nuevo.",
     "mpRetry": "Volver al pedido"
   },
+  "Residencias": {
+    "register": "Inscripción",
+    "back": "← Residencias",
+    "openForm": "Abrir el formulario en una pestaña nueva",
+    "loadingForm": "Cargando formulario...",
+    "notFound": "No encontramos esta residencia."
+  },
   "Contact": {
     "title": "Contacto",
     "name": "Nombre y apellido",
