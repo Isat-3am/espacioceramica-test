@@ -13,6 +13,29 @@
   --lastik-regular: var(--lastik-regular);
 }
 
+/* Flecha de "seguir bajando": sube y baja despacio, con poca amplitud. */
+@keyframes scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+.scroll-hint-arrow {
+  animation: scroll-hint 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint-arrow {
+    animation: none;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

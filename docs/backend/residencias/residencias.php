@@ -45,6 +45,7 @@ if (isset($_POST['form'])) {
   $action = $_POST['action'] ?? '';
   $id = intval($_POST['id'] ?? 0);
   $title = trim($_POST['title'] ?? '');
+  $text = trim($_POST['text'] ?? '');
   $form_url = trim($_POST['form_url'] ?? '');
   $posicion = intval($_POST['posicion'] ?? 1);
 
@@ -55,16 +56,16 @@ if (isset($_POST['form'])) {
   } else {
     try {
       if ($action == 'Agregar') {
-        $statement = $pdo->prepare('INSERT INTO residencias (title, form_url) VALUES (?, ?)');
-        $statement->execute([$title, $form_url]);
+        $statement = $pdo->prepare('INSERT INTO residencias (title, text, form_url) VALUES (?, ?, ?)');
+        $statement->execute([$title, $text, $form_url]);
         $new_id = $pdo->lastInsertId();
         // El id va en el slug para que nunca se repita.
         $statement = $pdo->prepare('UPDATE residencias SET slug = ? WHERE id = ?');
         $statement->execute([getSlug($title) . '-' . $new_id, $new_id]);
         $id = $new_id;
       } else {
-        $statement = $pdo->prepare('UPDATE residencias SET title = ?, form_url = ? WHERE id = ?');
-        $statement->execute([$title, $form_url, $id]);
+        $statement = $pdo->prepare('UPDATE residencias SET title = ?, text = ?, form_url = ? WHERE id = ?');
+        $statement->execute([$title, $text, $form_url, $id]);
       }
       reordenar($pdo, $id, $posicion);
       header("Location:$file_main");
@@ -75,7 +76,7 @@ if (isset($_POST['form'])) {
     }
   }
   // Hubo un error: se vuelve a mostrar el formulario con lo que se habia escrito.
-  $results = ['title' => $title, 'form_url' => $form_url];
+  $results = ['title' => $title, 'text' => $text, 'form_url' => $form_url];
   $action = $action ?: 'Agregar';
   $title_sec = $action == 'Agregar' ? "Agregar Residencia" : "Modificar Residencia";
   $id_select = $id;
@@ -141,6 +142,11 @@ require("includes/head.php");
               <div class="row text-secondary">Ej: Residencia 1 Enero 2027</div>
             </div>
             <div class="col col-12 col-md-6 mb-3">
+              <label class="form-label">Reseña</label>
+              <textarea name="text" cols="30" rows="4" class="form-control bg-transparent text-white mb-2"><?php echo h($results['text'] ?? '') ?></textarea>
+              <div class="row text-secondary">Texto corto que se ve debajo del título, a la izquierda del formulario. Puede quedar vacío.</div>
+            </div>
+            <div class="col col-12 mb-3">
               <label class="form-label">Link del formulario de inscripción</label>
               <input type="text" name="form_url" class="form-control bg-transparent text-white mb-2" value="<?php echo h($results['form_url'] ?? '') ?>" />
               <div class="row text-secondary">Link de Google Forms (https://docs.google.com/forms/...). Se muestra dentro de la página de la residencia.</div>

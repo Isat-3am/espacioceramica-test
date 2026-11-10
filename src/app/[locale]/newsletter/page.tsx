@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Footer from "@/components/footer";
 import Loader from "@/components/loading";
 import NewsletterPosts from "@/components/NewsletterPosts";
+import ScrollHint from "@/components/ScrollHint";
 
 // Valor por defecto si el backend todavia no tiene datos de la seccion.
 const DEFAULT_URL = "https://espacioceramica.substack.com";
@@ -76,31 +77,34 @@ const page = () => {
 
   return (
     <>
-      <section className="pt-6 lg:pt-8 flex flex-col gap-y-6">
-        <h1 className="text-3xl lg:text-4xl font-[--lastik-regular] uppercase">
-          {title}
-        </h1>
-        <p className="text-sm max-w-md leading-snug whitespace-break-spaces">
-          {text}
-        </p>
+      <section className="flex flex-col">
+        {/* En pantalla ancha: texto a la izquierda y formulario a la derecha, centrados a lo alto de la pantalla. */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-x-12 gap-y-8 pt-6 lg:pt-0 lg:min-h-[calc(100svh-4rem)]">
+          <div className="flex flex-col gap-y-4 lg:w-1/3">
+            <h1 className="text-sm font-[--lastik-regular] uppercase">
+              {title}
+            </h1>
+            <p className="text-sm max-w-md leading-snug whitespace-break-spaces">
+              {text}
+            </p>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm uppercase underline font-[--lastik-regular] hover:opacity-50"
+            >
+              {t("open")}
+            </a>
+          </div>
 
-        {base && (
-          <iframe
-            src={base + "/embed"}
-            title={title}
-            className="w-full max-w-md h-[320px] border-0 bg-white"
-            loading="lazy"
-          />
-        )}
-
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm uppercase underline font-[--lastik-regular] hover:opacity-50"
-        >
-          {t("open")}
-        </a>
+          {base && (
+            <iframe
+              src={base + "/embed"}
+              title={title}
+              className="w-full max-w-md lg:ml-auto h-[320px] border-0 bg-white"
+            />
+          )}
+        </div>
 
         {base && (
           <NewsletterPosts
@@ -109,6 +113,7 @@ const page = () => {
           />
         )}
       </section>
+      <ScrollHint />
       <Footer />
     </>
   );
