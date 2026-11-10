@@ -7,7 +7,7 @@ import { Link } from "@/i18n/navigation";
 import Footer from "@/components/footer";
 
 // Pagina a la que vuelve el comprador desde Mercado Pago.
-// El pedido y el descuento de stock los registra el webhook (/api/mp/webhook), no esta pagina.
+// El pedido y el descuento de stock los registra el aviso de Mercado Pago al backend (/mp/webhook), no esta pagina.
 const Result = () => {
   const t = useTranslations("Cart");
   const params = useSearchParams();
