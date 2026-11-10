@@ -86,7 +86,7 @@ const page = () => {
   return (
     <section className="pt-6 lg:pt-8 pb-12 flex flex-col gap-y-6">
       {back}
-      <h1 className="text-3xl lg:text-4xl font-[--lastik-regular] uppercase">
+      <h1 className="text-sm font-[--lastik-regular] uppercase">
         {data.title}
       </h1>
 
