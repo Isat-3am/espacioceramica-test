@@ -5,6 +5,7 @@
     "title-3": "Residencies",
     "title-4": "About Us",
     "title-5": "Contact",
+    "title-6": "Newsletter",
     "cart": "Cart",
     "menu": "Menu",
     "close": "Close"
@@ -46,6 +47,11 @@
     "mpPending": "Your payment is pending confirmation.\nWe'll email you once it's credited.",
     "mpFailure": "The payment could not be completed.\nYou were not charged. You can try again.",
     "mpRetry": "Back to your order"
+  },
+  "Newsletter": {
+    "title": "Newsletter",
+    "text": "Subscribe to receive the workshop's chronicle, news and store promotions.",
+    "open": "Read the newsletter on Substack"
   },
   "Residencias": {
     "register": "Registration",

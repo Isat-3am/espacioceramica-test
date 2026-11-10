@@ -44,6 +44,14 @@ const footer = () => {
             {t("title-4")}
           </Link>
           <Link
+            href="/newsletter"
+            className={`hover:underline uppercase ${
+              pathname === "/newsletter" ? "underline" : ""
+            }`}
+          >
+            {t("title-6")}
+          </Link>
+          <Link
             href="/contacto"
             className={`hover:underline uppercase ${
               pathname === "/contacto" ? "underline" : ""
