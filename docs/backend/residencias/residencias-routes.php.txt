@@ -3,7 +3,8 @@
 // Version completa en pausa: ../residencias-pausado/
 
 Flight::route('GET /residencias/@lang', function ($lang) {
-  $statement = Flight::db()->prepare('SELECT id, slug, title FROM residencias WHERE active = 1 ORDER BY id DESC');
+  // En el orden que eligio la artesana en el panel (posicion 1 primero).
+  $statement = Flight::db()->prepare('SELECT id, slug, title FROM residencias WHERE active = 1 ORDER BY top DESC, id DESC');
   $statement->execute();
   $items = [];
   foreach ($statement->fetchAll() as $row) {
