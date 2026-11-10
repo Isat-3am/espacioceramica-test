@@ -8,6 +8,10 @@ import Error from "@/components/Error";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "@/i18n/navigation";
 
+// PayPal oculto por ahora: se va a incorporar con la cuenta de los artesanos.
+// Para mostrarlo de nuevo, poner en true (el codigo del medio de pago sigue ahi).
+const PAYPAL_ENABLED = false;
+
 const Page = () => {
   const [payType, setPayType] = useState("Transferencia bancaria");
   const [mpLoading, setMpLoading] = useState(false);
@@ -177,16 +181,18 @@ const Page = () => {
                   {t("bankTransfer")}
                 </span>
               </div>
-              <div className="flex items-center gap-x-2">
-                <button
-                  onClick={() => setPayType("paypal")}
-                  type="button"
-                  className={`w-3 h-3 rounded-full hover:bg-black/100 cursor-pointer ${
-                    payType === "paypal" ? "bg-black/100" : "bg-black/10"
-                  }`}
-                ></button>
-                <span className="opacity-70 font-medium">{t("paypal")}</span>
-              </div>
+              {PAYPAL_ENABLED && (
+                <div className="flex items-center gap-x-2">
+                  <button
+                    onClick={() => setPayType("paypal")}
+                    type="button"
+                    className={`w-3 h-3 rounded-full hover:bg-black/100 cursor-pointer ${
+                      payType === "paypal" ? "bg-black/100" : "bg-black/10"
+                    }`}
+                  ></button>
+                  <span className="opacity-70 font-medium">{t("paypal")}</span>
+                </div>
+              )}
               <div className="flex items-center gap-x-2">
                 <button
                   onClick={() => setPayType("mercadopago")}
@@ -216,7 +222,7 @@ const Page = () => {
                 </div>
               </div>
             )}
-            {payType === "paypal" && (
+            {PAYPAL_ENABLED && payType === "paypal" && (
               <div className="text-sm">
                 <strong>PayPal:</strong>{" "}
                 <a
