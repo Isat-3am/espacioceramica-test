@@ -51,7 +51,10 @@
   "Newsletter": {
     "title": "Newsletter",
     "text": "Suscribite para recibir la crónica del taller y las novedades y promociones de la tienda.",
-    "open": "Ver el boletín en Substack"
+    "open": "Ver el boletín en Substack",
+    "latest": "Últimas publicaciones",
+    "read": "Leer en Substack",
+    "all": "Ver todas en Substack"
   },
   "Residencias": {
     "register": "Inscripción",

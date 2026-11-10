@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Footer from "@/components/footer";
 import Loader from "@/components/loading";
+import NewsletterPosts from "@/components/NewsletterPosts";
 
 // Valor por defecto si el backend todavia no tiene datos de la seccion.
 const DEFAULT_URL = "https://espacioceramica.substack.com";
@@ -100,6 +101,13 @@ const page = () => {
         >
           {t("open")}
         </a>
+
+        {base && (
+          <NewsletterPosts
+            pub={new URL(base).hostname.replace(".substack.com", "")}
+            archiveUrl={base + "/archive"}
+          />
+        )}
       </section>
       <Footer />
     </>
