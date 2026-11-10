@@ -18,6 +18,7 @@ Transferencia bancaria y PayPal siguen igual que antes (no descuentan stock).
 | `ORDER_API_TOKEN` | Token que protege `POST /order/create` (secreto, el mismo que está en `api/order_token.php` del servidor) | se genera al subir el backend |
 | `SITE_URL` | (opcional) URL pública del sitio, si no se quiere usar la del pedido | ej. `https://mi-proyecto.vercel.app` |
 | `SMTP_USER`, `SMTP_PASS` | Casilla para mandar los mails | en pruebas se pueden dejar vacías: el pago se registra igual y solo falla el mail |
+| `SMTP_HOST`, `SMTP_PORT` | (opcionales) servidor de correo. Sin ellas se usa Ferozo (`mda07.ferozo.com`, 465) | Para Gmail: `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_USER=espacioceramicapatagonia@gmail.com` y `SMTP_PASS` = clave de aplicación de Gmail (requiere verificación en dos pasos) |
 
 Para probar en la compu: crear `.env.local` en la raíz con esas variables (está ignorado por git).
 

@@ -25,16 +25,20 @@ const esc = (value: unknown) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-const createTransporter = () =>
-  nodemailer.createTransport({
-    host: "mda07.ferozo.com",
-    port: 465,
-    secure: true,
+// Por defecto usa el SMTP de Ferozo (como antes). Para usar Gmail: SMTP_HOST=smtp.gmail.com,
+// SMTP_USER=la casilla y SMTP_PASS=la clave de aplicacion de Gmail (no la contrasena de la cuenta).
+const createTransporter = () => {
+  const port = Number(process.env.SMTP_PORT) || 465;
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || "mda07.ferozo.com",
+    port,
+    secure: port === 465,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
   });
+};
 
 export async function sendOrderMail({
   buyer,
