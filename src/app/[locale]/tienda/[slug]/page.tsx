@@ -3,7 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Info from "@/components/info";
 import Info2 from "@/components/info2";
 import Envio from "@/components/envio";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Loader from "@/components/loading";
 import Image from "@/components/Image";
@@ -65,6 +65,26 @@ const page = () => {
     };
   }, [data]);
 
+  // La columna de datos queda quieta (sticky) mientras se bajan las fotos, siempre completa y sin
+  // scroll propio. Si en esta pantalla no entra entera (ventana baja o texto largo, por ejemplo con
+  // "Detalles de entrega" abierto), no se fija: se mueve con la pagina para que nada quede oculto.
+  const infoRef = useRef<HTMLDivElement>(null);
+  const [pinned, setPinned] = useState(true);
+
+  useEffect(() => {
+    const el = infoRef.current;
+    if (!el) return;
+    const check = () => setPinned(el.scrollHeight <= window.innerHeight - 112);
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    window.addEventListener("resize", check);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", check);
+    };
+  }, [data, loading]);
+
   if (loading) return <Loader />;
   if (!data) return null;
 
@@ -87,7 +107,12 @@ const page = () => {
       <div className="flex flex-col lg:flex-row pt-30 lg:pt-24 pb-2">
         {/* Pantalla ancha: la columna de datos queda quieta mientras se bajan las fotos. Nunca es mas alta
             que la pantalla; si el texto es largo, se recorre por dentro (arrastrando dentro de la columna). */}
-        <div className="lg:sticky lg:top-24 lg:self-start lg:w-2/5 lg:max-h-[calc(100svh-7rem)] lg:overflow-y-auto flex flex-col gap-y-10 lg:pl-2 lg:pr-20 pb-8">
+        <div
+          ref={infoRef}
+          className={`${
+            pinned ? "lg:sticky lg:top-24" : ""
+          } lg:self-start lg:w-2/5 flex flex-col gap-y-6 lg:pl-2 lg:pr-20 pb-8`}
+        >
           <h1 className="text-3xl lg:text-4xl font-[--lastik-regular] uppercase">
             {data.title}
           </h1>
