@@ -26,11 +26,27 @@ function link_valido($url)
 
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+// Orden manual: la posicion 1 es la primera que se ve en la web.
+// Se guarda en la columna `top` (el valor mas alto va primero), renumerando todas.
+function reordenar($pdo, $id, $posicion)
+{
+  $ids = $pdo->query('SELECT id FROM residencias ORDER BY top DESC, id DESC')->fetchAll(PDO::FETCH_COLUMN);
+  $ids = array_values(array_filter($ids, fn($x) => intval($x) !== intval($id)));
+  $posicion = max(1, min(count($ids) + 1, intval($posicion)));
+  array_splice($ids, $posicion - 1, 0, [intval($id)]);
+  $n = count($ids);
+  $statement = $pdo->prepare('UPDATE residencias SET top = ? WHERE id = ?');
+  foreach ($ids as $i => $rid) {
+    $statement->execute([$n - $i, intval($rid)]);
+  }
+}
+
 if (isset($_POST['form'])) {
   $action = $_POST['action'] ?? '';
   $id = intval($_POST['id'] ?? 0);
   $title = trim($_POST['title'] ?? '');
   $form_url = trim($_POST['form_url'] ?? '');
+  $posicion = intval($_POST['posicion'] ?? 1);
 
   if ($title === '') {
     $error = "El título es obligatorio.";
@@ -45,10 +61,12 @@ if (isset($_POST['form'])) {
         // El id va en el slug para que nunca se repita.
         $statement = $pdo->prepare('UPDATE residencias SET slug = ? WHERE id = ?');
         $statement->execute([getSlug($title) . '-' . $new_id, $new_id]);
+        $id = $new_id;
       } else {
         $statement = $pdo->prepare('UPDATE residencias SET title = ?, form_url = ? WHERE id = ?');
         $statement->execute([$title, $form_url, $id]);
       }
+      reordenar($pdo, $id, $posicion);
       header("Location:$file_main");
       die();
     } catch (PDOException $e) {
@@ -80,10 +98,25 @@ if (isset($_POST['form'])) {
   $results = $statement->fetch() ?: [];
 } else {
   $title_sec = "Residencias";
-  $statement = $pdo->prepare('SELECT * FROM residencias ORDER BY id DESC');
+  $statement = $pdo->prepare('SELECT * FROM residencias ORDER BY top DESC, id DESC');
   $statement->execute();
   $results = $statement->fetchAll();
   $total = count($results);
+}
+
+// Opciones del selector de posicion (solo cuando se muestra el formulario).
+if (isset($_GET['mod'])) {
+  $cant = intval($pdo->query('SELECT COUNT(*) FROM residencias')->fetchColumn());
+  $opciones = $action == 'Agregar' ? $cant + 1 : max(1, $cant);
+  if (isset($_POST['posicion'])) {
+    $pos_actual = intval($_POST['posicion']);
+  } else if ($action == 'Agregar') {
+    $pos_actual = $opciones; // las nuevas van al final por defecto
+  } else {
+    $ids = $pdo->query('SELECT id FROM residencias ORDER BY top DESC, id DESC')->fetchAll(PDO::FETCH_COLUMN);
+    $idx = array_search((string)$id_select, array_map('strval', $ids), true);
+    $pos_actual = $idx === false ? 1 : $idx + 1;
+  }
 }
 require("includes/head.php");
 
@@ -111,6 +144,18 @@ require("includes/head.php");
               <label class="form-label">Link del formulario de inscripción</label>
               <input type="text" name="form_url" class="form-control bg-transparent text-white mb-2" value="<?php echo h($results['form_url'] ?? '') ?>" />
               <div class="row text-secondary">Link de Google Forms (https://docs.google.com/forms/...). Se muestra dentro de la página de la residencia.</div>
+            </div>
+            <div class="col col-12 col-md-6 mb-3 pe-md-3">
+              <label class="form-label">Posición en la web</label>
+              <select name="posicion" class="form-select bg-transparent text-white mb-2">
+                <?php
+                for ($p = 1; $p <= $opciones; $p++) {
+                  $etiqueta = $p == 1 ? 'Posición 1 (la primera)' : 'Posición ' . $p;
+                  echo '<option value="' . $p . '"' . ($p == $pos_actual ? ' selected' : '') . '>' . $etiqueta . '</option>';
+                }
+                ?>
+              </select>
+              <div class="row text-secondary">Las demás residencias se acomodan solas.</div>
             </div>
           </div>
           <div class="row">
@@ -141,14 +186,16 @@ require("includes/head.php");
           <table class="table table-dark table-hover">
             <thead>
               <tr class="text-secondary">
+                <th scope="col">Pos.</th>
                 <th scope="col">Residencia</th>
                 <th scope="col">Formulario</th>
                 <th scope="col"></th>
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($results as $row) { ?>
+              <?php foreach ($results as $pos => $row) { ?>
                 <tr>
+                  <td valign="middle"><?php echo $pos + 1 ?></td>
                   <td valign="middle" class="text-primary"><strong><?php echo h($row['title']) ?></strong></td>
                   <td valign="middle"><a href="<?php echo h($row['form_url']) ?>" target="_blank" rel="noopener noreferrer">Ver formulario</a></td>
                   <td valign="middle" align="right">
