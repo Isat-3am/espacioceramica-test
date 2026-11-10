@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import ScrollHint from "@/components/ScrollHint";
 
 interface Post {
   id: number;
@@ -45,9 +46,15 @@ const NewsletterPosts = ({ pub, archiveUrl }: { pub: string; archiveUrl: string 
 
   return (
     <div className="flex flex-col gap-y-6 pt-12">
-      <h2 className="text-sm font-[--lastik-regular] uppercase">
-        {t("latest")}
-      </h2>
+      {/* En celular la flecha de "seguir bajando" va en esta fila, sobre el margen derecho. */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-[--lastik-regular] uppercase">
+          {t("latest")}
+        </h2>
+        <div className="lg:hidden -my-4">
+          <ScrollHint inline />
+        </div>
+      </div>
 
       <div className="flex flex-col max-w-3xl">
         {posts.map((post) => (
