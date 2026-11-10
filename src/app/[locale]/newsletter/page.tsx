@@ -102,7 +102,6 @@ const page = () => {
               src={base + "/embed"}
               title={title}
               className="w-full max-w-md lg:ml-auto h-[320px] border-0 bg-white"
-              loading="lazy"
             />
           )}
         </div>

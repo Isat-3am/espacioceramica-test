@@ -116,7 +116,6 @@ const page = () => {
           src={embed}
           title={data.title}
           className="w-full lg:flex-1 lg:min-w-0 lg:max-w-2xl lg:ml-auto h-[1400px] border-0"
-          loading="lazy"
         >
           {t("loadingForm")}
         </iframe>
