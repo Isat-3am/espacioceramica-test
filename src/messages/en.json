@@ -26,6 +26,8 @@
     "continue": "Continue Shopping",
     "checkout": "Checkout",
     "withoutStock": "Out of stock",
+    "stock": "Stock",
+    "available": "{count} available",
     "delivery": "Delivery Details",
     "deliveryType": "Delivery Type",
     "payType": "Payment Type",
