@@ -1,0 +1,124 @@
+// Requiere un archivo api/order_token.php (NO va en el repo) con:
+//   <?php define('ORDER_API_TOKEN', 'un-texto-largo-y-secreto');
+// El mismo valor va en Vercel como ORDER_API_TOKEN (solo servidor, sin NEXT_PUBLIC_).
+// Si el archivo no existe, el endpoint se niega a funcionar.
+if (file_exists(__DIR__ . '/order_token.php')) {
+  require_once __DIR__ . '/order_token.php';
+}
+
+Flight::route('POST /order/create', function () {
+  // Flight viejo (sin getHeader): se lee el header directo de PHP.
+  $token_recibido = $_SERVER['HTTP_X_ORDER_TOKEN'] ?? '';
+  if (!defined('ORDER_API_TOKEN') || !$token_recibido || !hash_equals(ORDER_API_TOKEN, $token_recibido)) {
+    Flight::json(['success' => false, 'error' => 'No autorizado'], 401);
+    return;
+  }
+
+  $body = json_decode(Flight::request()->getBody(), true);
+
+  $comprador = $body['comprador'] ?? [];
+  $nombre = sanitize($comprador['nombre'] ?? '');
+  $email = sanitize($comprador['email'] ?? '');
+  $telefono = sanitize($comprador['telefono'] ?? '');
+  $direccion = sanitize($comprador['direccion'] ?? '');
+  $medio_pago = sanitize($body['medio_pago'] ?? '');
+  $carrito = $body['items'] ?? [];
+  // El stock se descuenta igual; solo cambia el estado. Transferencia queda pendiente hasta confirmar el pago.
+  $estado = in_array($body['estado'] ?? '', ['pendiente', 'approved'], true) ? $body['estado'] : 'pendiente';
+
+  // Id del pago en Mercado Pago (opcional). Evita procesar dos veces el mismo pago
+  // si Mercado Pago avisa mas de una vez: la columna orders.payment_id es UNIQUE.
+  $pago_id = substr(sanitize((string)($body['pago_id'] ?? '')), 0, 64);
+
+  if (!$nombre || !$email || !$medio_pago || empty($carrito)) {
+    Flight::json(['success' => false, 'error' => 'Faltan datos del pedido'], 400);
+    return;
+  }
+
+  $db = Flight::db();
+
+  if ($pago_id !== '') {
+    $statement = $db->prepare('SELECT id, total FROM orders WHERE payment_id = ?');
+    $statement->execute([$pago_id]);
+    $existente = $statement->fetch();
+    if ($existente) {
+      Flight::json(['success' => true, 'duplicate' => true, 'order_id' => intval($existente['id']), 'total' => $existente['total']]);
+      return;
+    }
+  }
+
+  try {
+    $db->beginTransaction();
+
+    $total = 0;
+    $items_validados = [];
+
+    foreach ($carrito as $linea) {
+      $item_id = intval($linea['item_id'] ?? 0);
+      $cantidad = intval($linea['cantidad'] ?? 0);
+
+      if ($item_id <= 0 || $cantidad <= 0) {
+        throw new Exception('Item inválido en el carrito');
+      }
+
+      // FOR UPDATE bloquea la fila hasta el commit, para que dos compras
+      // simultáneas del mismo producto no descuenten stock que ya no está disponible.
+      $statement = $db->prepare('SELECT id, price_ars, stock FROM items WHERE id = ? FOR UPDATE');
+      $statement->execute([$item_id]);
+      $item = $statement->fetch();
+
+      if (!$item) {
+        throw new Exception('El producto ' . $item_id . ' no existe');
+      }
+
+      if ($item['stock'] < $cantidad) {
+        throw new Exception('Sin stock suficiente para el producto ' . $item_id);
+      }
+
+      $precio_unitario = $item['price_ars'];
+      $total += $precio_unitario * $cantidad;
+
+      $items_validados[] = [
+        'item_id' => $item_id,
+        'cantidad' => $cantidad,
+        'precio_unitario' => $precio_unitario,
+      ];
+    }
+
+    foreach ($items_validados as $linea) {
+      $statement = $db->prepare('UPDATE items SET stock = stock - ? WHERE id = ?');
+      $statement->execute([$linea['cantidad'], $linea['item_id']]);
+    }
+
+    $statement = $db->prepare(
+      'INSERT INTO orders (comprador_nombre, comprador_email, comprador_telefono, comprador_direccion, total, estado, medio_pago, payment_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    );
+    $statement->execute([$nombre, $email, $telefono, $direccion, $total, $estado, $medio_pago, $pago_id !== '' ? $pago_id : null]);
+    $order_id = $db->lastInsertId();
+
+    $statement = $db->prepare(
+      'INSERT INTO order_items (order_id, item_id, cantidad, precio_unitario) VALUES (?, ?, ?, ?)'
+    );
+    foreach ($items_validados as $linea) {
+      $statement->execute([$order_id, $linea['item_id'], $linea['cantidad'], $linea['precio_unitario']]);
+    }
+
+    $db->commit();
+
+    Flight::json(['success' => true, 'order_id' => intval($order_id), 'total' => $total]);
+  } catch (PDOException $e) {
+    if ($db->inTransaction()) $db->rollBack();
+    // 23000 = pago_id repetido (dos avisos casi simultaneos): el primero ya lo proceso.
+    if ($e->getCode() == '23000' && $pago_id !== '') {
+      Flight::json(['success' => true, 'duplicate' => true]);
+      return;
+    }
+    // No se devuelve el detalle de la base de datos.
+    error_log('order/create: ' . $e->getMessage());
+    Flight::json(['success' => false, 'error' => 'Error interno'], 500);
+  } catch (Exception $e) {
+    if ($db->inTransaction()) $db->rollBack();
+    Flight::json(['success' => false, 'error' => $e->getMessage()], 400);
+  }
+});

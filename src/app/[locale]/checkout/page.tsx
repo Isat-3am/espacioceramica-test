@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import CartResume from "@/components/CartResume";
 import { InfoType } from "@/types/types";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -10,6 +10,9 @@ import { useRouter } from "@/i18n/navigation";
 
 const Page = () => {
   const [payType, setPayType] = useState("Transferencia bancaria");
+  const [mpLoading, setMpLoading] = useState(false);
+  const [mpError, setMpError] = useState("");
+  const locale = useLocale();
   const t = useTranslations("Cart");
   const c = useTranslations("Contact");
   const { setBuyer } = useCart();
@@ -41,6 +44,37 @@ const Page = () => {
 
   const onSubmit: SubmitHandler<InfoType> = async (data) => {
     setBuyer({ ...data, pay_type: payType });
+
+    if (payType === "mercadopago") {
+      setMpError("");
+      setMpLoading(true);
+      try {
+        const res = await fetch("/api/mp/create-preference", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            buyer: data,
+            locale,
+            items: items.map((i) => ({
+              id: i.id,
+              slug: i.slug,
+              quantity: i.quantity,
+            })),
+          }),
+        });
+        const result = await res.json();
+        if (result.ok && result.url) {
+          window.location.href = result.url;
+          return;
+        }
+        setMpError(result.error || t("mpError"));
+      } catch {
+        setMpError(t("mpError"));
+      }
+      setMpLoading(false);
+      return;
+    }
+
     router.push("/checkout/end");
   };
 
@@ -152,7 +186,22 @@ const Page = () => {
                 ></button>
                 <span className="opacity-70 font-medium">{t("paypal")}</span>
               </div>
+              <div className="flex items-center gap-x-2">
+                <button
+                  onClick={() => setPayType("mercadopago")}
+                  type="button"
+                  className={`w-3 h-3 rounded-full hover:bg-black/100 cursor-pointer ${
+                    payType === "mercadopago" ? "bg-black/100" : "bg-black/10"
+                  }`}
+                ></button>
+                <span className="opacity-70 font-medium">
+                  {t("mercadoPago")}
+                </span>
+              </div>
             </div>
+            {payType === "mercadopago" && (
+              <div className="text-sm">{t("mercadoPagoInfo")}</div>
+            )}
             {payType === "Transferencia bancaria" && (
               <div className="flex flex-col">
                 <div className="text-sm">
@@ -181,11 +230,14 @@ const Page = () => {
             )}
           </div>
 
+          {mpError && <Error error={{ type: "validate", message: mpError }} />}
+
           <button
-            className="uppercase cursor-pointer underline font-base hover:opacity-50 font-[--lastik-regular] mb-8"
+            className="uppercase cursor-pointer underline font-base hover:opacity-50 font-[--lastik-regular] mb-8 disabled:opacity-50 disabled:cursor-wait"
             type="submit"
+            disabled={mpLoading}
           >
-            {t("endPurchase")}
+            {mpLoading ? t("mpRedirecting") : t("endPurchase")}
           </button>
         </form>
       </div>

@@ -37,7 +37,22 @@
     "close": "Cerrar",
     "endPurchase": "Finalizar compra",
     "thanks": "Gracias por tu compra.\nTe responderemos lo antes posible.",
-    "required": "Este dato es obligatorio"
+    "required": "Este dato es obligatorio",
+    "mercadoPago": "Pagar con Mercado Pago",
+    "mercadoPagoInfo": "Vas a completar el pago en la página segura de Mercado Pago. Después volvés acá.",
+    "mpRedirecting": "Redirigiendo a Mercado Pago...",
+    "mpError": "No pudimos iniciar el pago. Probá de nuevo en unos minutos.",
+    "mpThanks": "Gracias por tu compra.\nRecibimos tu pago y te enviamos un email con el detalle.",
+    "mpPending": "Tu pago está pendiente de confirmación.\nCuando se acredite te enviaremos un email.",
+    "mpFailure": "No se pudo completar el pago.\nNo se hizo ningún cargo. Podés intentar de nuevo.",
+    "mpRetry": "Volver al pedido"
+  },
+  "Residencias": {
+    "register": "Inscripción",
+    "back": "← Residencias",
+    "openForm": "Abrir el formulario en una pestaña nueva",
+    "loadingForm": "Cargando formulario...",
+    "notFound": "No encontramos esta residencia."
   },
   "Contact": {
     "title": "Contacto",

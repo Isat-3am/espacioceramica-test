@@ -1,0 +1,33 @@
+// Rutas de residencias (version minima: titulo y link del formulario). Se agregan al final de api/apis.php.
+// Solo lectura (GET). El idioma queda en la ruta para cuando se agreguen traducciones.
+// Version completa en pausa: ../residencias-pausado/
+
+Flight::route('GET /residencias/@lang', function ($lang) {
+  $statement = Flight::db()->prepare('SELECT id, slug, title FROM residencias WHERE active = 1 ORDER BY id DESC');
+  $statement->execute();
+  $items = [];
+  foreach ($statement->fetchAll() as $row) {
+    $items[] = [
+      'id' => intval($row['id']),
+      'slug' => $row['slug'],
+      'title' => $row['title'],
+    ];
+  }
+  Flight::json($items ?: null);
+});
+
+Flight::route('GET /residencia/@slug/@lang', function ($slug, $lang) {
+  $statement = Flight::db()->prepare('SELECT id, slug, title, form_url FROM residencias WHERE slug = ? AND active = 1');
+  $statement->execute([$slug]);
+  $row = $statement->fetch();
+  if (!$row) {
+    Flight::json(null);
+    return;
+  }
+  Flight::json([
+    'id' => intval($row['id']),
+    'slug' => $row['slug'],
+    'title' => $row['title'],
+    'form_url' => $row['form_url'] ?: null,
+  ]);
+});
