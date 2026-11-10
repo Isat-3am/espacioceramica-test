@@ -24,7 +24,7 @@ function url_valida($url)
   $host = strtolower((string)parse_url($url, PHP_URL_HOST));
   $path = (string)parse_url($url, PHP_URL_PATH);
   if ($host === 'substack.com') return (bool)preg_match('#^/@[A-Za-z0-9_-]+#', $path);
-  return substr($host, -14) === '.substack.com' && strlen($host) > 14;
+  return substr($host, -13) === '.substack.com' && strlen($host) > 13;
 }
 
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -93,20 +93,24 @@ require("includes/head.php");
         <div class="row mb-5">
           <div class="col col-12 col-md-6 mb-3 pe-md-3">
             <label class="form-label">Título (Spanish)</label>
-            <input type="text" name="title" class="form-control bg-transparent text-white mb-2" value="<?php echo h($results['title'] ?? '') ?>" />
+            <input type="text" name="title" data-col="title" data-lang="es" class="form-control bg-transparent text-white mb-2" value="<?php echo h($results['title'] ?? '') ?>" />
           </div>
           <div class="col col-12 col-md-6 mb-3">
             <label class="form-label">Título (English)</label>
-            <input type="text" name="title_en" class="form-control bg-transparent text-white mb-2" value="<?php echo h($results['title_en'] ?? '') ?>" />
+            <input type="text" name="title_en" data-col="title" data-lang="en" class="form-control bg-transparent text-white mb-2" value="<?php echo h($results['title_en'] ?? '') ?>" />
+            <button type="button" class="btn btn-sm btn-outline-secondary btn-traducir" data-col="title">Traducir</button>
+            <span class="small text-secondary msg-traducir" data-col="title"></span>
           </div>
           <div class="col col-12 col-md-6 mb-3 pe-md-3">
             <label class="form-label">Descripción (Spanish)</label>
-            <textarea name="text" cols="30" rows="4" class="form-control bg-transparent text-white mb-2"><?php echo h($results['text'] ?? '') ?></textarea>
+            <textarea name="text" data-col="text" data-lang="es" cols="30" rows="4" class="form-control bg-transparent text-white mb-2"><?php echo h($results['text'] ?? '') ?></textarea>
           </div>
           <div class="col col-12 col-md-6 mb-3">
             <label class="form-label">Descripción (English)</label>
-            <textarea name="text_en" cols="30" rows="4" class="form-control bg-transparent text-white mb-2"><?php echo h($results['text_en'] ?? '') ?></textarea>
-            <div class="row text-secondary">Si se deja vacío, se muestra el texto por defecto en inglés.</div>
+            <textarea name="text_en" data-col="text" data-lang="en" cols="30" rows="4" class="form-control bg-transparent text-white mb-2"><?php echo h($results['text_en'] ?? '') ?></textarea>
+            <button type="button" class="btn btn-sm btn-outline-secondary btn-traducir" data-col="text">Traducir</button>
+            <span class="small text-secondary msg-traducir" data-col="text"></span>
+            <div class="row text-secondary">Se traduce solo al salir de la casilla en español, si la de inglés está vacía. Para volver a traducir, borrá el inglés. Si queda vacío, se muestra el texto por defecto en inglés.</div>
           </div>
           <div class="col col-12 mb-3">
             <label class="form-label">Link de Substack</label>
@@ -123,6 +127,82 @@ require("includes/head.php");
       </form>
     </section>
     <?php require("includes/footer.php"); ?>
+    <script>
+      // Traduccion automatica espanol -> ingles (traducir.php).
+      // Regla: solo se traduce si la casilla en ingles esta vacia. Nunca pisa texto escrito.
+      (function() {
+        function campo(col, lang) {
+          return document.querySelector('[data-col="' + col + '"][data-lang="' + lang + '"]');
+        }
+
+        function boton(col) {
+          return document.querySelector('.btn-traducir[data-col="' + col + '"]');
+        }
+
+        function mensaje(col, texto) {
+          var el = document.querySelector('.msg-traducir[data-col="' + col + '"]');
+          if (el) el.textContent = texto;
+        }
+
+        function actualizarBoton(col) {
+          var es = campo(col, 'es'),
+            en = campo(col, 'en'),
+            btn = boton(col);
+          if (!btn || !es || !en) return;
+          var vacio = en.value.trim() === '';
+          btn.disabled = !vacio;
+          btn.title = vacio ? '' : 'Para volver a traducir, borrá el texto en inglés.';
+        }
+
+        function traducir(col) {
+          var es = campo(col, 'es'),
+            en = campo(col, 'en');
+          if (!es || !en) return;
+          if (en.value.trim() !== '' || es.value.trim() === '') return;
+          mensaje(col, 'Traduciendo...');
+          fetch('traducir.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'fetch'
+              },
+              body: 'text=' + encodeURIComponent(es.value)
+            })
+            .then(function(r) {
+              return r.json();
+            })
+            .then(function(data) {
+              if (data.ok) {
+                // Si mientras tanto alguien escribio en ingles, no se pisa.
+                if (en.value.trim() === '') en.value = data.text;
+                mensaje(col, 'Traducido. Revisalo antes de guardar.');
+              } else {
+                mensaje(col, data.error || 'No se pudo traducir.');
+              }
+              actualizarBoton(col);
+            })
+            .catch(function() {
+              mensaje(col, 'No se pudo traducir.');
+            });
+        }
+
+        document.querySelectorAll('.btn-traducir').forEach(function(btn) {
+          var col = btn.getAttribute('data-col');
+          actualizarBoton(col);
+          btn.addEventListener('click', function() {
+            traducir(col);
+          });
+          campo(col, 'en').addEventListener('input', function() {
+            actualizarBoton(col);
+            mensaje(col, '');
+          });
+          // Al salir de la casilla en español, se traduce sola si el inglés esta vacio.
+          campo(col, 'es').addEventListener('blur', function() {
+            traducir(col);
+          });
+        });
+      })();
+    </script>
   </main>
 </body>
 

@@ -23,16 +23,16 @@ const ScrollHint = () => {
       <svg
         className="scroll-hint-arrow"
         width="14"
-        height="72"
-        viewBox="0 0 14 72"
+        height="36"
+        viewBox="0 0 14 36"
         fill="none"
         stroke="currentColor"
         strokeWidth="1"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <line x1="7" y1="1" x2="7" y2="70" />
-        <polyline points="1,64 7,70 13,64" />
+        <line x1="7" y1="1" x2="7" y2="34" />
+        <polyline points="1,28 7,34 13,28" />
       </svg>
     </div>
   );
