@@ -26,7 +26,7 @@ const publicationBase = (url: string) => {
       const m = u.pathname.match(/^\/@([A-Za-z0-9_-]+)/);
       return m ? `https://${m[1]}.substack.com` : null;
     }
-    if (u.hostname.endsWith(".substack.com") && u.hostname.length > 14) {
+    if (u.hostname.endsWith(".substack.com") && u.hostname.length > 13) {
       return u.origin;
     }
     return null;
@@ -101,7 +101,9 @@ const page = () => {
             <iframe
               src={base + "/embed"}
               title={title}
-              className="w-full max-w-md lg:ml-auto h-[320px] border-0 bg-white"
+              // El fondo blanco es de Substack y no se puede cambiar desde afuera: "multiply" lo mezcla
+              // con el fondo de la pagina, asi el blanco toma su mismo color.
+              className="w-full max-w-md lg:ml-auto h-[320px] border-0 mix-blend-multiply"
             />
           )}
         </div>
