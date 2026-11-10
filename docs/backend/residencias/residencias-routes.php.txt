@@ -18,7 +18,7 @@ Flight::route('GET /residencias/@lang', function ($lang) {
 });
 
 Flight::route('GET /residencia/@slug/@lang', function ($slug, $lang) {
-  $statement = Flight::db()->prepare('SELECT id, slug, title, form_url FROM residencias WHERE slug = ? AND active = 1');
+  $statement = Flight::db()->prepare('SELECT id, slug, title, text, form_url FROM residencias WHERE slug = ? AND active = 1');
   $statement->execute([$slug]);
   $row = $statement->fetch();
   if (!$row) {
@@ -29,6 +29,7 @@ Flight::route('GET /residencia/@slug/@lang', function ($slug, $lang) {
     'id' => intval($row['id']),
     'slug' => $row['slug'],
     'title' => $row['title'],
+    'text' => (string)$row['text'],
     'form_url' => $row['form_url'] ?: null,
   ]);
 });

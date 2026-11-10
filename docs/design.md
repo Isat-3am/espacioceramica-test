@@ -27,6 +27,7 @@ Reglas:
 - Título de una ficha de producto: `text-3xl lg:text-4xl font-[--lastik-regular] uppercase`.
 - Título de una página de contenido (residencia, newsletter): el mismo tamaño chico y sutil de los títulos de sección, `text-sm font-[--lastik-regular] uppercase`. No usar el título grande ahí.
 - Páginas con un bloque de presentación (ej. Newsletter): en pantalla ancha, título y texto a la izquierda y el elemento principal a la derecha, centrados a lo alto de la pantalla (`lg:min-h-[calc(100svh-4rem)] lg:items-center`). En celular, apilados.
+- Página de una residencia: en pantalla ancha, título y reseña a la izquierda (columna fija, centrada a lo alto de la pantalla mientras se baja) y el formulario de Google a la derecha, desde el borde superior (debajo del menú). El enlace de volver va arriba a la izquierda. En celular, todo en fila: volver, título, reseña, formulario.
 - Flecha de "seguir bajando" (`ScrollHint`): línea larga y fina (1 px), abajo al centro, con un movimiento lento y corto; desaparece al empezar a bajar. Respeta `prefers-reduced-motion`.
 - Título de sección: `text-sm font-[--lastik-regular] uppercase`.
 - Títulos y botones siempre en **mayúsculas** (`uppercase`). El texto corrido, no.

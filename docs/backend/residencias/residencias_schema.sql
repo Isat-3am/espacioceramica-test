@@ -6,6 +6,7 @@
 CREATE TABLE `residencias` (
   `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `text` text COLLATE utf8mb4_unicode_ci,
   `form_url` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `slug` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `top` int NOT NULL DEFAULT 0,

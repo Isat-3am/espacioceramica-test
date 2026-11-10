@@ -9,6 +9,7 @@ interface data {
   id: number;
   slug: string;
   title: string;
+  text: string;
   form_url: string | null;
 }
 
@@ -84,32 +85,41 @@ const page = () => {
   const embed = embedUrl(data.form_url);
 
   return (
-    <section className="pt-6 lg:pt-8 pb-12 flex flex-col gap-y-6">
-      {back}
-      <h1 className="text-sm font-[--lastik-regular] uppercase">
-        {data.title}
-      </h1>
+    <section className="flex flex-col lg:flex-row lg:items-start gap-x-12 gap-y-6 pt-6 lg:pt-0 pb-12">
+      {/* Pantalla ancha: titulo y resena a la izquierda, centrados a lo alto de la pantalla y fijos
+          mientras se baja por el formulario. En celular: una cosa debajo de la otra. */}
+      <div className="relative lg:w-1/3 lg:shrink-0 lg:sticky lg:top-12 lg:h-[calc(100svh-3rem)] flex flex-col lg:justify-center gap-y-4">
+        <div className="lg:absolute lg:top-0 lg:left-0">{back}</div>
+        <h1 className="text-sm font-[--lastik-regular] uppercase">
+          {data.title}
+        </h1>
+        {data.text && (
+          <p className="text-sm max-w-md leading-snug whitespace-break-spaces">
+            {data.text}
+          </p>
+        )}
+        {data.form_url && (
+          <a
+            href={data.form_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm uppercase underline font-[--lastik-regular] hover:opacity-50"
+          >
+            {t("openForm")}
+          </a>
+        )}
+      </div>
 
+      {/* Formulario a la derecha, arrancando desde arriba de la pagina. */}
       {embed && (
         <iframe
           src={embed}
           title={data.title}
-          className="w-full max-w-3xl h-[1400px] border-0"
+          className="w-full lg:flex-1 lg:min-w-0 lg:max-w-2xl lg:ml-auto h-[1400px] border-0"
           loading="lazy"
         >
           {t("loadingForm")}
         </iframe>
-      )}
-
-      {data.form_url && (
-        <a
-          href={data.form_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm uppercase underline font-[--lastik-regular] hover:opacity-50"
-        >
-          {t("openForm")}
-        </a>
       )}
     </section>
   );
