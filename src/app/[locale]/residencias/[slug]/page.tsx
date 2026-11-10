@@ -57,6 +57,11 @@ const page = () => {
     if (data) document.title = data.title + " | Espacio Cerámica";
   }, [data]);
 
+  // Al entrar desde el botón de la lista, empezar arriba de todo (no en la posicion de la lista).
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [loading]);
+
   if (loading) return <Loader />;
 
   const back = (
@@ -70,7 +75,7 @@ const page = () => {
 
   if (!data)
     return (
-      <section className="pt-30 lg:pt-40 flex flex-col gap-y-8">
+      <section className="pt-6 lg:pt-8 flex flex-col gap-y-8">
         <p className="text-sm">{t("notFound")}</p>
         {back}
       </section>
@@ -79,7 +84,7 @@ const page = () => {
   const embed = embedUrl(data.form_url);
 
   return (
-    <section className="pt-30 lg:pt-40 pb-12 flex flex-col gap-y-8">
+    <section className="pt-6 lg:pt-8 pb-12 flex flex-col gap-y-6">
       {back}
       <h1 className="text-3xl lg:text-4xl font-[--lastik-regular] uppercase">
         {data.title}
