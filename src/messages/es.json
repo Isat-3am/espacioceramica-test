@@ -26,6 +26,8 @@
     "continue": "Continuar comprando",
     "checkout": "Finalizar pedido",
     "withoutStock": "Sin stock",
+    "stock": "Stock",
+    "available": "{count, plural, one {# disponible} other {# disponibles}}",
     "delivery": "Detalles de entrega",
     "deliveryType": "Forma de entrega",
     "payType": "Forma de pago",

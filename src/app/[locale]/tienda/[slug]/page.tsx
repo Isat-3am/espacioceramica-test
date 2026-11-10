@@ -99,6 +99,14 @@ const page = () => {
                 formatPrice(data.price_usd, "USD")
               }
             />
+            <Info
+              title={t("stock")}
+              description={
+                data.stock > 0
+                  ? t("available", { count: data.stock })
+                  : t("withoutStock")
+              }
+            />
             <Info title={t("author")} description={data.author} />
             <Info2
               title={t("size")}
