@@ -84,8 +84,10 @@ const page = () => {
 
   return (
     <section className="relative">
-      <div className="flex flex-col lg:flex-row-reverse pt-30 lg:pt-40 pb-2">
-        <div className="lg:fixed lg:left-6 lg:w-2/5 flex flex-col gap-y-10 lg:pr-20 pb-8">
+      <div className="flex flex-col lg:flex-row pt-30 lg:pt-24 pb-2">
+        {/* Pantalla ancha: la columna de datos queda quieta mientras se bajan las fotos. Nunca es mas alta
+            que la pantalla; si el texto es largo, se recorre por dentro (arrastrando dentro de la columna). */}
+        <div className="lg:sticky lg:top-24 lg:self-start lg:w-2/5 lg:max-h-[calc(100svh-7rem)] lg:overflow-y-auto flex flex-col gap-y-10 lg:pl-2 lg:pr-20 pb-8">
           <h1 className="text-3xl lg:text-4xl font-[--lastik-regular] uppercase">
             {data.title}
           </h1>
