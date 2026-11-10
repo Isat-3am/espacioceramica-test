@@ -53,19 +53,20 @@ const Page = () => {
       setMpError("");
       setMpLoading(true);
       try {
-        const res = await fetch("/api/mp/create-preference", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            buyer: data,
-            locale,
-            items: items.map((i) => ({
-              id: i.id,
-              slug: i.slug,
-              quantity: i.quantity,
-            })),
-          }),
-        });
+        // El pago lo crea el backend propio (precios y stock salen de su base de datos).
+        // text/plain evita el preflight de CORS; el cuerpo es JSON.
+        const res = await fetch(
+          process.env.NEXT_PUBLIC_API_URL + "/mp/create-preference",
+          {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify({
+              buyer: data,
+              locale,
+              items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
+            }),
+          },
+        );
         const result = await res.json();
         if (result.ok && result.url) {
           window.location.href = result.url;

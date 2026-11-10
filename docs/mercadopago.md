@@ -1,36 +1,50 @@
 # Pago con Mercado Pago (Checkout Pro)
 
-Estado: código escrito y compilado. Creación del pago probada contra la cuenta de prueba de Marco. **Falta probar el pago completo** (pagar con el comprador de prueba y ver que el webhook descuente el stock), que necesita el sitio publicado en Vercel.
+Estado: el pago y los mails corren en el **backend propio** (Ferozo). Probado en `backend-test`: crear el pago, rechazos y mail real. Falta repetir la prueba de pago completo con el sitio apuntando al backend (ver "Pasos para probar").
+
+**Idea central:** las claves de Mercado Pago y los mails están en el servidor de Ferozo, que controla Marco. En Vercel **no hace falta ninguna variable nueva** (solo `NEXT_PUBLIC_API_URL`, que ya existe). Así publicar el sitio no depende de cargar claves en el Vercel del dev.
 
 ## Cómo funciona
 1. En `/checkout` el comprador elige "Pagar con Mercado Pago" y completa sus datos.
-2. El sitio llama a `POST /api/mp/create-preference`. Esa ruta **lee precio y stock de la API del backend** (no confía en el navegador), crea el pago en Mercado Pago y devuelve el link. El comprador va a la página de pago de Mercado Pago.
-3. Cuando el pago queda aprobado, Mercado Pago avisa a `POST /api/mp/webhook`. Esa ruta **vuelve a consultar el pago a Mercado Pago** con el token (no confía en el aviso), y llama a `POST /order/create` del backend: descuenta el stock y guarda el pedido. Después manda los mails (comprador y tienda).
+2. El sitio llama a `POST {API}/mp/create-preference` (con `Content-Type: text/plain` para evitar el preflight de CORS). El backend lee **precio y stock de su propia base** (solo productos, `type = 1`), crea el pago en Mercado Pago y devuelve el link. El comprador va a la página de pago de Mercado Pago.
+3. Cuando el pago queda aprobado, Mercado Pago avisa a `POST {API}/mp/webhook`. El backend **vuelve a consultar el pago a Mercado Pago** con el token (no confía en el aviso), registra el pedido y descuenta el stock en una transacción, y manda los mails.
 4. El comprador vuelve a `/checkout/mp?r=success|pending|failure`, que solo muestra un mensaje (y vacía el carrito si salió bien).
 
-Transferencia bancaria y PayPal siguen igual que antes (no descuentan stock).
+Transferencia bancaria sigue igual que antes (mail por `/api/send-mail`, sin descontar stock). PayPal está **oculto** (`PAYPAL_ENABLED = false` en `checkout/page.tsx`).
 
-## Variables de entorno (en Vercel, nunca en el repo)
-| Variable | Qué es | Dónde se saca |
-|---|---|---|
-| `NEXT_PUBLIC_API_URL` | URL de la API del backend | test: `https://api-test.espacioceramicapatagonia.com` |
-| `MP_ACCESS_TOKEN` | Token de acceso de Mercado Pago (secreto) | `Dev\MERCADOPAGO_TEST.txt` (de prueba) |
-| `ORDER_API_TOKEN` | Token que protege `POST /order/create` (secreto, el mismo que está en `api/order_token.php` del servidor) | se genera al subir el backend |
-| `SITE_URL` | (opcional) URL pública del sitio, si no se quiere usar la del pedido | ej. `https://mi-proyecto.vercel.app` |
-| `SMTP_USER`, `SMTP_PASS` | Casilla para mandar los mails | en pruebas se pueden dejar vacías: el pago se registra igual y solo falla el mail |
-| `SMTP_HOST`, `SMTP_PORT` | (opcionales) servidor de correo. Sin ellas se usa Ferozo (`mda07.ferozo.com`, 465) | Para Gmail: `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_USER=espacioceramicapatagonia@gmail.com` y `SMTP_PASS` = clave de aplicación de Gmail (requiere verificación en dos pasos) |
+## Archivos
+- `docs/backend/pagos/pagos.php` → va en `api/pagos.php` del servidor. Se carga desde `api/apis.php` con `require_once` dentro de `try/catch` (si falla, el resto de la API sigue funcionando).
+- `docs/backend/pagos/config_pagos.example.php` → se copia como `api/config_pagos.php` **en el servidor** con los valores reales. No va al repo.
+- Columna `orders.payment_id` (UNIQUE): `docs/backend/orders_add_payment_id.sql`. Evita registrar dos veces el mismo pago.
 
-Para probar en la compu: crear `.env.local` en la raíz con esas variables (está ignorado por git).
+## Configuración del servidor (`api/config_pagos.php`)
+| Constante | Qué es |
+|---|---|
+| `MP_ACCESS_TOKEN` | Token de Mercado Pago (de prueba o de producción) |
+| `SITE_URL` | Dirección pública del sitio (a dónde vuelve el comprador) |
+| `API_PUBLIC_URL` | Dirección pública de la API (a dónde Mercado Pago manda el aviso) |
+| `MAIL_FROM` | Casilla del dominio desde la que salen los mails (ej. `pedidos@espacioceramicapatagonia.com`) |
+| `NOTIFY_EMAIL` | Casilla que recibe el aviso de cada compra y las alertas. En pruebas: el mail de Marco |
+| `REPLY_TO` | (opcional) a dónde van las respuestas de los compradores. Por defecto `NOTIFY_EMAIL` |
 
-## Pasos para probar el pago completo
-1. Backend de test: ejecutar `docs/backend/orders_add_payment_id.sql` en phpMyAdmin (base `c2821514_ec_test`) y subir el `apis.php` con el `order-create` actualizado.
-2. Vercel (cuenta de Marco): importar el fork, cargar las variables de arriba, desplegar. Usar la URL de **producción** del proyecto (`nombre.vercel.app`): las URLs de vista previa pueden estar protegidas y bloquear el aviso de Mercado Pago.
-3. Comprar un producto con stock en esa URL, elegir Mercado Pago, y pagar con el **usuario comprador de prueba** (sus datos están en el panel de Mercado Pago: Developers, cuentas de prueba) y las tarjetas de prueba de Mercado Pago.
-4. Verificar: stock del producto baja en 1, aparece el pedido en la tabla `orders` con `payment_id`, y la compra repetida del mismo producto sin stock se rechaza.
+Los mails los manda el propio servidor con `mail()`: **sin contraseñas ni claves de Gmail**. Limitación del hosting: la protección (snuffleupagus) bloquea el 5to parámetro de `mail()`, por eso no se usa. El dominio ya tiene SPF y DKIM del hosting.
+
+## Pasos para probar (backend-test)
+1. Configuración de prueba en `backend-test/api/config_pagos.php` (ya subida).
+2. Comprar un producto con stock en el sitio, elegir Mercado Pago y pagar con el comprador de prueba o con la tarjeta de prueba (titular `APRO`, ver documentación de Mercado Pago, tarjetas de prueba).
+3. Verificar: el stock baja en 1, el pedido está en `orders` con `payment_id`, llegan el mail de confirmación (a la casilla del comprador) y el aviso (a `NOTIFY_EMAIL`).
+4. Casos para probar: pago rechazado (titular `OTHE`), pendiente (`CONT`), y un aviso repetido (no debe descontar dos veces).
+
+## Pasar a producción
+1. Backup nuevo del hosting.
+2. Base real: crear `orders` y `order_items` (`docs/backend/orders_schema.sql`) y agregar `payment_id` (`orders_add_payment_id.sql`).
+3. Subir `pagos.php` y la línea de `require` en `api/apis.php`; crear `api/config_pagos.php` con el token **real**, `SITE_URL` y `API_PUBLIC_URL` reales, y `NOTIFY_EMAIL` de los artesanos.
+4. Frontend: PR al repo original con `NEXT_PUBLIC_API_URL` real (ya configurada en el Vercel real).
+5. Comprar algo real de bajo monto y verificar todo el circuito.
 
 ## Límites conocidos
-- El stock se descuenta **cuando el pago se aprueba**, no al empezar a pagar. Si dos personas pagan a la vez la última unidad, la segunda queda con el pago aprobado y sin pedido: el sitio manda un mail de aviso a la tienda con el id del pago para reembolsarlo desde Mercado Pago. Para piezas únicas con poco tráfico es aceptable; si se vuelve un problema, se puede reservar el stock al empezar el pago.
+- El stock se descuenta **cuando el pago se aprueba**, no al empezar a pagar. Si dos personas pagan a la vez la última unidad, la segunda queda con el pago aprobado y sin pedido: el servidor manda una alerta a `NOTIFY_EMAIL` con el id del pago para reembolsarlo desde Mercado Pago.
 - Si falla el mail, el pedido igual queda registrado.
-- Mercado Pago reintenta el aviso hasta que se responde 200: `order/create` es idempotente por `payment_id` (columna UNIQUE), así que un aviso repetido no descuenta dos veces.
-- Cloudflare está delante de la API: si bloquea los pedidos del servidor de Vercel (desafío anti-bots), habrá que permitirlos con una regla. Se ve en los registros de Vercel como error 403 al llamar a `/order/create`.
-- Pasar a producción: crear las credenciales reales de la cuenta de la artesana, cambiar `MP_ACCESS_TOKEN`, probar con una compra real de bajo monto.
+- Mercado Pago reintenta el aviso hasta recibir 200; `payment_id` UNIQUE evita descontar dos veces.
+- El aviso llega al backend a través de Cloudflare. Si Cloudflare lo bloqueara (desafío anti-bots), hay que permitir `/mp/webhook`. Se nota porque no se descuenta el stock tras un pago aprobado.
+- El servidor registra errores en el `error_log` del hosting.
