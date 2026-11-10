@@ -37,7 +37,15 @@
     "close": "Close",
     "endPurchase": "End Purchase",
     "thanks": "Thanks for your purchase. We'll get back to you as soon as possible.",
-    "required": "This field is required"
+    "required": "This field is required",
+    "mercadoPago": "Pay with Mercado Pago",
+    "mercadoPagoInfo": "You will complete the payment on Mercado Pago's secure page. Then you come back here.",
+    "mpRedirecting": "Redirecting to Mercado Pago...",
+    "mpError": "We couldn't start the payment. Please try again in a few minutes.",
+    "mpThanks": "Thanks for your purchase.\nWe received your payment and sent you an email with the details.",
+    "mpPending": "Your payment is pending confirmation.\nWe'll email you once it's credited.",
+    "mpFailure": "The payment could not be completed.\nYou were not charged. You can try again.",
+    "mpRetry": "Back to your order"
   },
   "Contact": {
     "title": "Contact",
