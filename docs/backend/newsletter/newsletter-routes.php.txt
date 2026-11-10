@@ -1,0 +1,21 @@
+// Rutas de newsletter. Se agregan al final de api/apis.php (solo lectura, GET).
+// Devuelve el titulo, la descripcion y el link para el idioma pedido. Si un campo esta vacio
+// devuelve "" y el sitio usa su texto por defecto. Sin tabla todavia (el panel la crea): null.
+
+Flight::route('GET /newsletter/@lang', function ($lang) {
+  try {
+    $row = Flight::db()->query('SELECT * FROM newsletter WHERE id = 1')->fetch();
+  } catch (Exception $e) {
+    $row = null;
+  }
+  if (!$row) {
+    Flight::json(null);
+    return;
+  }
+  $en = $lang == 'en';
+  Flight::json([
+    'title' => (string)($en ? $row['title_en'] : $row['title']),
+    'text' => (string)($en ? $row['text_en'] : $row['text']),
+    'url' => (string)$row['substack_url'],
+  ]);
+});
