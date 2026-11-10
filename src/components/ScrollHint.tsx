@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 
-// Flecha larga y fina, abajo al centro de la pantalla, que se mueve suavemente para indicar que se
-// puede seguir hacia abajo. Desaparece apenas se empieza a bajar.
-const ScrollHint = () => {
+// Flecha larga y fina que se mueve suavemente para indicar que se puede seguir hacia abajo.
+// Desaparece apenas se empieza a bajar.
+// Por defecto va fija abajo al centro de la pantalla; con `inline` se queda donde se la ponga
+// (en celular se usa al lado del titulo "Ultimas publicaciones", sobre el margen derecho).
+const ScrollHint = ({ inline = false }: { inline?: boolean }) => {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -16,9 +18,9 @@ const ScrollHint = () => {
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none fixed bottom-6 left-1/2 -translate-x-1/2 z-10 transition-opacity duration-500 ${
-        visible ? "opacity-100" : "opacity-0"
-      }`}
+      className={`pointer-events-none transition-opacity duration-500 ${
+        inline ? "" : "fixed bottom-6 left-1/2 -translate-x-1/2 z-10"
+      } ${visible ? "opacity-100" : "opacity-0"}`}
     >
       <svg
         className="scroll-hint-arrow"

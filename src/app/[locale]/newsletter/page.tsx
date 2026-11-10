@@ -115,7 +115,10 @@ const page = () => {
           />
         )}
       </section>
-      <ScrollHint />
+      {/* Pantalla ancha: flecha fija abajo al centro. En celular va junto a "Ultimas publicaciones". */}
+      <div className="hidden lg:block">
+        <ScrollHint />
+      </div>
       <Footer />
     </>
   );
