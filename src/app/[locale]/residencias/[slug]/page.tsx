@@ -68,7 +68,7 @@ const page = () => {
   const back = (
     <Link
       href="/residencias"
-      className="text-sm uppercase font-[--lastik-regular] hover:underline"
+      className="text-sm uppercase font-[--lastik-regular] hover:underline active:opacity-50 transition-opacity"
     >
       {t("back")}
     </Link>
@@ -103,7 +103,7 @@ const page = () => {
             href={data.form_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm uppercase underline font-[--lastik-regular] hover:opacity-50"
+            className="text-sm uppercase underline font-[--lastik-regular] hover:opacity-50 active:opacity-50 transition-opacity"
           >
             {t("openForm")}
           </a>
