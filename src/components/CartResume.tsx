@@ -57,7 +57,7 @@ const CartResume = () => {
               </div>
               <button
                 onClick={() => removeItem(item.id)}
-                className="mt-2 underline cursor-pointer text-sm opacity-70 hover:opacity-100 font-[--lastik-regular]"
+                className="mt-5 underline cursor-pointer text-sm opacity-70 hover:opacity-100 font-[--lastik-regular]"
               >
                 {t("remove")}
               </button>
