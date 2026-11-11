@@ -1,28 +1,27 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface Props {
   src: string;
   alt: string;
+  // Las fotos que se ven apenas se abre la pagina pueden pedirse con prioridad.
+  priority?: boolean;
 }
 
-const ImageComponent = ({ src, alt }: Props) => {
-  const [isLoading, setIsLoading] = useState(true);
+// Las imagenes se piden recien cuando estan por entrar en pantalla (carga diferida),
+// asi la tienda no baja todas las fotos de golpe. Mientras carga, se ve el fondo gris.
+const ImageComponent = ({ src, alt, priority = false }: Props) => {
+  const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    const image = new Image();
-    image.src = src;
-    image.onload = () => {
-      setIsLoading(false);
-    };
-  }, [src]);
-
-  return isLoading ? (
-    <div className="w-full h-full bg-black/10 animate-pulse"></div>
-  ) : (
+  return (
     <img
       src={src}
       alt={alt}
-      className="h-full w-full object-cover object-center transition-all hover:opacity-90"
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
+      onLoad={() => setLoaded(true)}
+      className={`h-full w-full object-cover object-center transition-all hover:opacity-90 ${
+        loaded ? "" : "bg-black/10 animate-pulse"
+      }`}
     />
   );
 };
