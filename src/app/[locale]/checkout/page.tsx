@@ -13,7 +13,7 @@ import { useRouter } from "@/i18n/navigation";
 const PAYPAL_ENABLED = false;
 
 const Page = () => {
-  const [payType, setPayType] = useState("Transferencia bancaria");
+  const [payType, setPayType] = useState("mercadopago");
   const [mpLoading, setMpLoading] = useState(false);
   const [mpError, setMpError] = useState("");
   const locale = useLocale();
@@ -166,45 +166,57 @@ const Page = () => {
             className={`p-6 border border-gray-300 flex flex-col gap-y-6 bg-white`}
           >
             <h2 className="font-medium">{t("payType")}</h2>
-            <div>
-              <div className="flex items-center gap-x-2">
-                <button
-                  onClick={() => setPayType("Transferencia bancaria")}
-                  type="button"
-                  className={`w-3 h-3 rounded-full hover:bg-black/100 cursor-pointer ${
-                    payType === "Transferencia bancaria"
-                      ? "bg-black/100"
-                      : "bg-black/10"
-                  }`}
-                ></button>
-                <span className="opacity-70 font-medium">
-                  {t("bankTransfer")}
-                </span>
-              </div>
-              {PAYPAL_ENABLED && (
-                <div className="flex items-center gap-x-2">
-                  <button
-                    onClick={() => setPayType("paypal")}
-                    type="button"
-                    className={`w-3 h-3 rounded-full hover:bg-black/100 cursor-pointer ${
-                      payType === "paypal" ? "bg-black/100" : "bg-black/10"
-                    }`}
-                  ></button>
-                  <span className="opacity-70 font-medium">{t("paypal")}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-x-2">
+            <div className="flex flex-col gap-y-3">
                 <button
                   onClick={() => setPayType("mercadopago")}
                   type="button"
-                  className={`w-3 h-3 rounded-full hover:bg-black/100 cursor-pointer ${
-                    payType === "mercadopago" ? "bg-black/100" : "bg-black/10"
+                  className={`w-full flex items-center gap-x-4 p-4 border text-left cursor-pointer ${
+                    payType === "mercadopago"
+                      ? "border-black"
+                      : "border-gray-300 hover:border-black/50"
                   }`}
-                ></button>
-                <span className="opacity-70 font-medium">
-                  {t("mercadoPago")}
-                </span>
-              </div>
+                >
+                  <span className="w-5 h-5 shrink-0 rounded-full border border-black flex items-center justify-center">
+                    {payType === "mercadopago" && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
+                    )}
+                  </span>
+                  <span className="font-medium">{t("mercadoPago")}</span>
+                </button>
+                <button
+                  onClick={() => setPayType("Transferencia bancaria")}
+                  type="button"
+                  className={`w-full flex items-center gap-x-4 p-4 border text-left cursor-pointer ${
+                    payType === "Transferencia bancaria"
+                      ? "border-black"
+                      : "border-gray-300 hover:border-black/50"
+                  }`}
+                >
+                  <span className="w-5 h-5 shrink-0 rounded-full border border-black flex items-center justify-center">
+                    {payType === "Transferencia bancaria" && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
+                    )}
+                  </span>
+                  <span className="font-medium">{t("bankTransfer")}</span>
+                </button>
+              {PAYPAL_ENABLED && (
+                <button
+                  onClick={() => setPayType("paypal")}
+                  type="button"
+                  className={`w-full flex items-center gap-x-4 p-4 border text-left cursor-pointer ${
+                    payType === "paypal"
+                      ? "border-black"
+                      : "border-gray-300 hover:border-black/50"
+                  }`}
+                >
+                  <span className="w-5 h-5 shrink-0 rounded-full border border-black flex items-center justify-center">
+                    {payType === "paypal" && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
+                    )}
+                  </span>
+                  <span className="font-medium">{t("paypal")}</span>
+                </button>
+              )}
             </div>
             {payType === "mercadopago" && (
               <div className="text-sm">{t("mercadoPagoInfo")}</div>
