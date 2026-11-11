@@ -107,13 +107,37 @@ Mensaje corto al dev:
 
 ### Pendiente
 - [x] **Traducción automática en los paneles Productos, Hornos, Nosotros y Presentaciones:** hecha en `backend-test` (guion `includes/traducir_auto.php` cargado desde `includes/footer.php`; no en Voluntarios ni Galerías). **Falta probarla con sesión en el panel** y, para el sitio real, repetir los pasos de `docs/backend/traduccion/LEEME.md`.
-- [ ] Probar pago rechazado (titular `OTHE`), pendiente (`CONT`) y un aviso repetido (no debe descontar dos veces).
+- [x] Pago rechazado (`OTHE`), pendiente (`CONT`) y aviso repetido: probados el 11/11 (ver "Avance 11/11/2026").
 - [ ] **Pedir a los artesanos** (videollamada de 20 min): crear la aplicación de Mercado Pago y compartir credenciales con la cuenta de Developers de Marco (de prueba y después de producción), sin usuario ni contraseña. Guía: `guia-mercadopago-espacio-ceramica.html`.
 - [ ] **PayPal Business:** cuando se quiera integrar, armar con los artesanos una guía en PDF con la documentación vigente de PayPal (aplicación con client id y secret, guardados en el backend como los de Mercado Pago).
 - [ ] **Publicar en el sitio real** (ver `docs/mercadopago.md`): backup nuevo; en la base real crear `orders`, `order_items` y `payment_id`, `residencias` (con `text` y `top`); la tabla `newsletter` se crea sola; subir `pagos.php`, `config_pagos.php` con el token real y las direcciones reales, paneles `residencias.php` y `newsletter.php`, enlaces del menú y rutas de `apis.php`; frontend: PR al repo original.
-- [ ] **Prueba de publicar desde el repo original:** un cambio mínimo y visible (etiqueta `meta`) por PR a `marianoariassoy/espacioceramica`, para ver si el Vercel del dev publica al fusionar. Solo con confirmación de Marco. Si no, plan A/B/C con el dev (invitación a Vercel, que él publique, o mover el dominio).
+- [x] **Prueba de publicar desde el repo original:** hecha el 11/11 con confirmación de Marco (ver "Avance 11/11/2026"). Marco puede publicar sin el dev; el proyecto de Vercel sigue siendo del dev.
+- [ ] Sacar del repo original la etiqueta de prueba `publicacion-test` (commit `3ec50d0` en `layout.tsx`; no se ve en la página). Hacerlo junto con la publicación definitiva, y fusionar `upstream/main` en el fork antes de preparar ese PR.
 - [ ] Transferencia bancaria: su mail sigue saliendo por `/api/send-mail` con el SMTP del dev. Falta pasarlo al backend (con cuidado de que no sirva para enviar spam).
 - [ ] Decisiones con los artesanos: nombre de la sección (Residencias o Pasantías), si el stock va en la lista de la tienda, y si las residencias llevan título y reseña en inglés.
 - [ ] Presupuesto: el trabajo de $50.000 (formulario de pasantías) cubre el formulario incrustado; la lista de publicaciones de Substack, la etapa 2 de residencias y la traducción en paneles son ampliaciones.
 - [ ] Cerrar el PR #11 (aviso de compra configurable): quedó obsoleto con el pago en el backend.
 - [ ] Siguen en manos del dev: dominio, cuenta de Cloudflare y proyecto de Vercel del sitio real.
+
+## Avance (11/11/2026)
+
+### Hecho y probado
+- **Pagos, todos los casos** (test): aprobado (descuenta stock y manda los dos mails), aviso repetido (3 reenvíos del mismo pago: el stock de los 69 productos quedó igual), rechazado `OTHE` y pendiente `CONT` (no descuentan stock ni mandan mails; al volver al sitio dice "pago pendiente de confirmación"). Para cargar el titular hay que elegir "Nueva tarjeta" en Mercado Pago: las tarjetas guardadas del comprador de prueba tienen titular fijo.
+- **Prueba de publicación en el repo original:** Marco tiene permiso de escritura en `marianoariassoy/espacioceramica`. Se subió una rama y luego se llevó a `main` un commit de prueba (`3ec50d0`, etiqueta `publicacion-test` invisible). El Vercel del dev (`mariano-arias-projects/espacioceramica`) hizo la vista previa y el despliegue de producción a los pocos minutos, y la etiqueta apareció en `www.espacioceramicapatagonia.com`. Nota: el push al repo original no sale con el token limitado de `gh` (solo cubre el fork); se hizo con el inicio de sesión de Git en el navegador (`git -c credential.helper= -c credential.helper=manager push ...`).
+- **Mails de Vercel:** `vercel.json` con `github.silent` (PR 31) para que el bot deje de comentar en cada PR.
+- **Checkout:** medios de pago como botones grandes, Mercado Pago arriba y seleccionado por defecto (PR 27). Carrito: botón Eliminar separado de + y - (PR 28 y 29).
+- **Fotos más livianas:** carga diferida en el sitio (PR 30: al abrir la tienda se piden unas 28 fotos en vez de 69) y panel que guarda **WebP calidad 92, mismo tamaño** (PR 32, `docs/backend/imagenes/`). Antes el panel guardaba JPG calidad 100. Medido en test: lista de la tienda de 13,6 MB a 2,3 MB. Los JPG originales quedan en `images/` como respaldo. Se descartó achicar las miniaturas (Marco prioriza la definición).
+- **Test igual a la tienda real (11/11):** nuevo backup completo de Ferozo (`Dev/Originales/backup-noviembre/`, 300 MB; el anterior, del 7/9, sigue en `Dev/Originales`). Se cargaron en `c2821514_ec_test` los datos de `authors`, `categories`, `images` e `items` de la base real, se subieron las 31 fotos que faltaban y se convirtió todo a WebP. Resultado: 70 productos en cada una, 0 diferencias de campos en el detalle de los 70, categorías y autores iguales. No se tocaron los usuarios del panel, los pedidos de prueba, las residencias ni el newsletter. Respaldo de las tablas anteriores del test: `*_bk_20261111`.
+- Residencia 2 (test): se cargó el mismo texto de presentación que tiene la residencia 1.
+- Dos productos (`yunomi-small` y `porcelain-yunomi`) tienen una foto vacía en la tienda **real** también (entrada sin archivo en `images`); conviene corregirlo desde el panel.
+
+### Cómo se publicará en el sitio real (nada se toca hasta que la artesana pase las credenciales de Mercado Pago, revise el test y dé el OK)
+1. Backup nuevo de Ferozo justo antes de publicar (Mi Sitio Web → Copias de seguridad → Crear nueva → Full; solo deja guardar uno a la vez, así que descargarlo a la PC antes de borrar el anterior).
+2. Cuenta FTP nueva limitada a `public_html/backend` (como la de `backend-test`).
+3. **No se copia la base de test sobre la real.** Se aplican los cambios sobre la real: tablas nuevas (`orders`, `order_items`, `payment_id`, `residencias`, `newsletter`), archivos del backend (`pagos.php`, `config_pagos.php` con las claves reales, paneles, traducción, `create_image*.php`), y `convertir_imagenes.php` para pasar a WebP todas las fotos de la real, incluidas las de productos nuevos.
+4. Frontend: PR/commit al repo original (que Vercel del dev publica solo).
+
+### Pendiente
+- [ ] Que la artesana revise el test y pida cambios; después, su OK.
+- [ ] Credenciales de Mercado Pago reales (aplicación de las artesanas compartida con la cuenta de Developers de Marco).
+- [ ] Probar con sesión en `backend-test` la traducción automática en los paneles y una subida real de foto (se probó solo con una subida simulada).
