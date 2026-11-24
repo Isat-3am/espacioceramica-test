@@ -41,11 +41,13 @@ const Inscripciones = ({ locale }: { locale: string }) => {
     {
       key: "residencia",
       title: t("typeResidencias"),
+      none: t("noneOpenResidencias"),
       items: data.filter((i) => i.tipo !== "experiencia"),
     },
     {
       key: "experiencia",
       title: t("typeExperiencias"),
+      none: t("noneOpenExperiencias"),
       items: data.filter((i) => i.tipo === "experiencia"),
     },
   ];
@@ -66,7 +68,7 @@ const Inscripciones = ({ locale }: { locale: string }) => {
               {col.title}
             </h3>
             {col.items.length === 0 ? (
-              <p className="text-sm opacity-70">{t("noneOpen")}</p>
+              <p className="text-sm opacity-70">{col.none}</p>
             ) : (
               col.items.map((item) => (
                 <ButtonNavigation

@@ -69,7 +69,8 @@
     "notFound": "We couldn't find this residency.",
     "typeExperiencias": "Educational Experiences",
     "typeResidencias": "Residencies",
-    "noneOpen": "There are no open registrations at the moment."
+    "noneOpenExperiencias": "There are no open registrations for educational experiences at the moment.",
+    "noneOpenResidencias": "There are no open registrations for residencies at the moment."
   },
   "Contact": {
     "title": "Contact",
