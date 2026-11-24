@@ -8,6 +8,7 @@ CREATE TABLE `residencias` (
   `title` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
   `text` text COLLATE utf8mb4_unicode_ci,
   `form_url` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `tipo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'residencia',
   `slug` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `top` int NOT NULL DEFAULT 0,
   `active` tinyint(1) NOT NULL DEFAULT 1,

@@ -13,18 +13,21 @@ import Loader from "@/components/loading";
 interface data {
   id: number;
   image: string;
+  title: string;
+  text: string;
 }
 
 const page = () => {
   const locale = useLocale();
   const [file, setFile] = useState("");
-  const [article, setArticle] = useState("#pasantias");
+  const [article, setArticle] = useState("#experiencias-formativas");
   const [data, setData] = useState<data[]>([]);
   const [loading, setLoading] = useState(true);
-  const apiURL = process.env.NEXT_PUBLIC_API_URL + "/intros/ESP";
+  // Con el idioma de la página: de la presentacion "Residencias" se usan la foto y la descripcion.
+  const apiURL = process.env.NEXT_PUBLIC_API_URL + "/intros/" + locale;
 
   useEffect(() => {
-    document.title = "Pasantias Espacio Cerámica";
+    document.title = "Residencias Espacio Cerámica";
   }, []);
 
   useEffect(() => {
@@ -64,6 +67,15 @@ const page = () => {
               className="w-2/3 max-w-md"
             />
           </div>
+          {/* Descripcion cargada en el panel (Presentaciones > Residencias). El titulo no se repite
+              porque el logo ya dice "Residencias". Si la descripcion esta vacia, no se muestra nada. */}
+          {data[2]?.text && (
+            <div className="flex lg:justify-center mt-8">
+              <p className="lg:w-2/3 max-w-md leading-snug whitespace-break-spaces">
+                {data[2].text}
+              </p>
+            </div>
+          )}
         </div>
         <div className="flex lg:w-2/3 aspect-4/5 lg:aspect-5/4 overflow-hidden">
           <Image src={data[2].image} alt="Residencias" />
@@ -72,9 +84,11 @@ const page = () => {
 
       <div className="sticky top-10 flex flex-col w-full bg-[#f6f6f7] py-2 z-10">
         <Item
-          title={locale === "es" ? "Pasantías" : "Internships"}
-          active={article === "#pasantias"}
-          action={() => goTo("#pasantias")}
+          title={
+            locale === "es" ? "Experiencias Formativas" : "Educational Experiences"
+          }
+          active={article === "#experiencias-formativas"}
+          action={() => goTo("#experiencias-formativas")}
         />
         <Item
           title={locale === "es" ? "Voluntarios" : "Volunteers"}
@@ -83,7 +97,7 @@ const page = () => {
         />
       </div>
 
-      <div className="scroll-mt-12" id="pasantias">
+      <div className="scroll-mt-12" id="experiencias-formativas">
         <Intro locale={locale} section={4} />
       </div>
 

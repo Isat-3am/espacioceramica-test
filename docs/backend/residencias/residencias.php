@@ -26,6 +26,19 @@ function link_valido($url)
 
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+// Tipos de inscripcion: se eligen en el panel y en la web salen en dos columnas.
+$TIPOS = ['experiencia' => 'Experiencias formativas', 'residencia' => 'Residencias'];
+
+// Si la tabla es de la version anterior (sin la columna "tipo"), se agrega sola.
+// Lo que ya estaba cargado queda como "Residencias".
+try {
+  if (!$pdo->query("SHOW COLUMNS FROM residencias LIKE 'tipo'")->fetch()) {
+    $pdo->exec("ALTER TABLE residencias ADD COLUMN tipo varchar(20) NOT NULL DEFAULT 'residencia' AFTER form_url");
+  }
+} catch (PDOException $e) {
+  error_log('residencias.php (columna tipo): ' . $e->getMessage());
+}
+
 // Orden manual: la posicion 1 es la primera que se ve en la web.
 // Se guarda en la columna `top` (el valor mas alto va primero), renumerando todas.
 function reordenar($pdo, $id, $posicion)
@@ -47,6 +60,7 @@ if (isset($_POST['form'])) {
   $title = trim($_POST['title'] ?? '');
   $text = trim($_POST['text'] ?? '');
   $form_url = trim($_POST['form_url'] ?? '');
+  $tipo = array_key_exists($_POST['tipo'] ?? '', $TIPOS) ? $_POST['tipo'] : 'residencia';
   $posicion = intval($_POST['posicion'] ?? 1);
 
   if ($title === '') {
@@ -56,16 +70,16 @@ if (isset($_POST['form'])) {
   } else {
     try {
       if ($action == 'Agregar') {
-        $statement = $pdo->prepare('INSERT INTO residencias (title, text, form_url) VALUES (?, ?, ?)');
-        $statement->execute([$title, $text, $form_url]);
+        $statement = $pdo->prepare('INSERT INTO residencias (title, text, form_url, tipo) VALUES (?, ?, ?, ?)');
+        $statement->execute([$title, $text, $form_url, $tipo]);
         $new_id = $pdo->lastInsertId();
         // El id va en el slug para que nunca se repita.
         $statement = $pdo->prepare('UPDATE residencias SET slug = ? WHERE id = ?');
         $statement->execute([getSlug($title) . '-' . $new_id, $new_id]);
         $id = $new_id;
       } else {
-        $statement = $pdo->prepare('UPDATE residencias SET title = ?, text = ?, form_url = ? WHERE id = ?');
-        $statement->execute([$title, $text, $form_url, $id]);
+        $statement = $pdo->prepare('UPDATE residencias SET title = ?, text = ?, form_url = ?, tipo = ? WHERE id = ?');
+        $statement->execute([$title, $text, $form_url, $tipo, $id]);
       }
       reordenar($pdo, $id, $posicion);
       header("Location:$file_main");
@@ -76,7 +90,7 @@ if (isset($_POST['form'])) {
     }
   }
   // Hubo un error: se vuelve a mostrar el formulario con lo que se habia escrito.
-  $results = ['title' => $title, 'text' => $text, 'form_url' => $form_url];
+  $results = ['title' => $title, 'text' => $text, 'form_url' => $form_url, 'tipo' => $tipo];
   $action = $action ?: 'Agregar';
   $title_sec = $action == 'Agregar' ? "Agregar Residencia" : "Modificar Residencia";
   $id_select = $id;
@@ -137,6 +151,19 @@ require("includes/head.php");
         <form method="POST" name="form">
           <div class="row mb-5">
             <div class="col col-12 col-md-6 mb-3 pe-md-3">
+              <label class="form-label">Tipo de inscripción</label>
+              <select name="tipo" class="form-select bg-transparent text-white mb-2">
+                <?php
+                $tipo_actual = $results['tipo'] ?? 'residencia';
+                foreach ($TIPOS as $valor => $nombre) {
+                  echo '<option value="' . h($valor) . '"' . ($valor == $tipo_actual ? ' selected' : '') . '>' . h($nombre) . '</option>';
+                }
+                ?>
+              </select>
+              <div class="row text-secondary">En la web, la inscripción sale en la columna de su tipo.</div>
+            </div>
+            <div class="col col-12 col-md-6 mb-3">&nbsp;</div>
+            <div class="col col-12 col-md-6 mb-3 pe-md-3">
               <label class="form-label">Título</label>
               <input type="text" name="title" class="form-control bg-transparent text-white mb-2" value="<?php echo h($results['title'] ?? '') ?>" />
               <div class="row text-secondary">Ej: Residencia 1 Enero 2027</div>
@@ -193,7 +220,8 @@ require("includes/head.php");
             <thead>
               <tr class="text-secondary">
                 <th scope="col">Pos.</th>
-                <th scope="col">Residencia</th>
+                <th scope="col">Inscripción</th>
+                <th scope="col">Tipo</th>
                 <th scope="col">Formulario</th>
                 <th scope="col"></th>
               </tr>
@@ -203,6 +231,7 @@ require("includes/head.php");
                 <tr>
                   <td valign="middle"><?php echo $pos + 1 ?></td>
                   <td valign="middle" class="text-primary"><strong><?php echo h($row['title']) ?></strong></td>
+                  <td valign="middle"><?php echo h($TIPOS[$row['tipo'] ?? 'residencia'] ?? 'Residencias') ?></td>
                   <td valign="middle"><a href="<?php echo h($row['form_url']) ?>" target="_blank" rel="noopener noreferrer">Ver formulario</a></td>
                   <td valign="middle" align="right">
                     <a href="?mod=1&edit=1&i=<?php echo intval($row['id']) ?>" class="circle bg-transparent" title="Editar" aria-label="Editar"><i class="bi bi-file-earmark-text"></i></a>

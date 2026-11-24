@@ -63,7 +63,10 @@
     "back": "← Residencies",
     "openForm": "Open the form in a new tab",
     "loadingForm": "Loading form...",
-    "notFound": "We couldn't find this residency."
+    "notFound": "We couldn't find this residency.",
+    "typeExperiencias": "Educational Experiences",
+    "typeResidencias": "Residencies",
+    "noneOpen": "There are no open registrations at the moment."
   },
   "Contact": {
     "title": "Contact",
