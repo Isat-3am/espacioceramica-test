@@ -69,7 +69,8 @@
     "notFound": "No encontramos esta residencia.",
     "typeExperiencias": "Experiencias Formativas",
     "typeResidencias": "Residencias",
-    "noneOpen": "Por ahora no hay inscripciones abiertas."
+    "noneOpenExperiencias": "Por ahora no hay inscripciones abiertas a experiencias formativas.",
+    "noneOpenResidencias": "Por ahora no hay inscripciones abiertas a residencias."
   },
   "Contact": {
     "title": "Contacto",
