@@ -39,19 +39,19 @@ const Inscripciones = ({ locale }: { locale: string }) => {
   // Lo que no tenga tipo (datos viejos) cuenta como residencia.
   const columnas = [
     {
-      key: "experiencia",
-      title: t("typeExperiencias"),
-      items: data.filter((i) => i.tipo === "experiencia"),
-    },
-    {
       key: "residencia",
       title: t("typeResidencias"),
       items: data.filter((i) => i.tipo !== "experiencia"),
     },
+    {
+      key: "experiencia",
+      title: t("typeExperiencias"),
+      items: data.filter((i) => i.tipo === "experiencia"),
+    },
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row items-start gap-4 pt-20">
+    <div className="flex flex-col lg:flex-row items-start gap-4 pt-12">
       <div className="lg:w-1/4">
         <h2 className="text-sm font-[--lastik-regular] uppercase">
           {t("register")}
