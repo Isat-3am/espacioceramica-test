@@ -7,10 +7,13 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import Error from "@/components/Error";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "@/i18n/navigation";
+import { formatPrice } from "@/utils/formatPrice";
 
-// PayPal oculto por ahora: se va a incorporar con la cuenta de los artesanos.
-// Para mostrarlo de nuevo, poner en true (el codigo del medio de pago sigue ahi).
-const PAYPAL_ENABLED = false;
+// PayPal visible (cuenta confirmada: la de un familiar de los artesanos, paypal.me/DaianaLopez991).
+// Es un link de pago de PayPal.Me, no una integracion: se cobra solo en dolares (el monto va en el link).
+// Para ocultarlo, poner en false.
+const PAYPAL_ENABLED = true;
+const PAYPAL_USER = "DaianaLopez991";
 
 const Page = () => {
   const [payType, setPayType] = useState("mercadopago");
@@ -22,6 +25,21 @@ const Page = () => {
   const { setBuyer } = useCart();
   const router = useRouter();
   const { items, buyer } = useCart();
+
+  // PayPal se cobra solo en dolares: el total sale de los precios en USD del carrito y va en el link
+  // (paypal.me/usuario/MONTOUSD), asi el pago se abre con el monto y la moneda ya cargados.
+  const totalUsd = items.reduce(
+    (acc, i) => acc + Number(i.price_usd) * i.quantity,
+    0,
+  );
+  const paypalAmount = Number.isInteger(totalUsd)
+    ? String(totalUsd)
+    : totalUsd.toFixed(2);
+  // Si por algun motivo no hay precio en dolares, se abre el link sin monto.
+  const paypalLink =
+    totalUsd > 0
+      ? `https://www.paypal.com/paypalme/${PAYPAL_USER}/${paypalAmount}USD`
+      : `https://www.paypal.com/paypalme/${PAYPAL_USER}`;
 
   const Label = ({ title }: { title: string }) => {
     return (
@@ -235,15 +253,19 @@ const Page = () => {
               </div>
             )}
             {PAYPAL_ENABLED && payType === "paypal" && (
-              <div className="text-sm">
-                <strong>PayPal:</strong>{" "}
+              <div className="text-sm flex flex-col gap-y-3">
+                <p>{t("paypalInfo")}</p>
+                <p>
+                  <strong>{t("paypalTotal")}</strong>{" "}
+                  {formatPrice(totalUsd, "USD")}
+                </p>
                 <a
-                  href="https://www.paypal.com/paypalme/DaianaLopez991"
+                  href={paypalLink}
                   target="_blank"
                   rel="noreferrer"
-                  className="hover:underline"
+                  className="uppercase underline font-[--lastik-regular] hover:opacity-50 active:opacity-50 transition-opacity w-fit"
                 >
-                  @DaianaLopez991
+                  {t("paypalPay")}
                 </a>
               </div>
             )}
