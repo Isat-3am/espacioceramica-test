@@ -166,3 +166,8 @@ Mensaje corto al dev:
 - [ ] Integración de PayPal con cuenta Business (monto y moneda fijados por el sitio) y guía en PDF.
 - [ ] Artesanas: apagar los pledges de Substack y probar si Stripe acepta Argentina.
 - [ ] Limpieza opcional: variables de Vercel sin uso (`MP_ACCESS_TOKEN`, `ORDER_API_TOKEN`, `ORDER_NOTIFY_EMAIL`), archivos sobrantes en `Dev\Originales\backup-noviembre`, revocar el token viejo de GitHub.
+
+### Test al día con la tienda real (24/11/2026)
+- Se comparó la lista pública y el detalle de cada producto (título, textos, categoría, autor, precios, stock, medidas, cantidad de fotos) entre la tienda real y el test. Desde el backup del 11/11 la real cambió: se agregó "Plato de porcelana" (`porcelane-dish`, id 158) y se sacaron "Horizonte" (`horizon`) y "Par perfecto" (`perfect-pair`). Los otros 67 productos, incluido el stock, estaban iguales.
+- Se actualizó solo el test: se cargó el plato nuevo (es y en, 4 fotos pasadas a WebP calidad 92) y se sacaron los dos productos. Respaldo en `items_bk_20261124` e `images_bk_20261124`. Resultado: 69 y 69 productos, 0 diferencias.
+- Como la tienda real puede cambiar en cualquier momento, **el último backup se hace justo cuando Marco avise que es el momento de publicar**, y ahí se repite esta comparación.
