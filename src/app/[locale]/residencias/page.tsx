@@ -20,7 +20,7 @@ interface data {
 const page = () => {
   const locale = useLocale();
   const [file, setFile] = useState("");
-  const [article, setArticle] = useState("#experiencias-formativas");
+  const [article, setArticle] = useState("#inscripciones");
   const [data, setData] = useState<data[]>([]);
   const [loading, setLoading] = useState(true);
   // Con el idioma de la página: de la presentacion "Residencias" se usan la foto y la descripcion.
@@ -70,7 +70,7 @@ const page = () => {
           {/* Descripcion cargada en el panel (Presentaciones > Residencias). El titulo no se repite
               porque el logo ya dice "Residencias". Si la descripcion esta vacia, no se muestra nada. */}
           {data[2]?.text && (
-            <div className="flex lg:justify-center mt-8">
+            <div className="flex lg:justify-center mt-8 lg:mt-16">
               <p className="lg:w-2/3 max-w-md leading-snug whitespace-break-spaces">
                 {data[2].text}
               </p>
@@ -83,6 +83,11 @@ const page = () => {
       </div>
 
       <div className="sticky top-10 flex flex-col w-full bg-[#f6f6f7] py-2 z-10">
+        <Item
+          title={locale === "es" ? "Inscripción" : "Registration"}
+          active={article === "#inscripciones"}
+          action={() => goTo("#inscripciones")}
+        />
         <Item
           title={
             locale === "es" ? "Experiencias Formativas" : "Educational Experiences"
@@ -97,11 +102,13 @@ const page = () => {
         />
       </div>
 
+      <div className="scroll-mt-12" id="inscripciones">
+        <Inscripciones locale={locale} />
+      </div>
+
       <div className="scroll-mt-12" id="experiencias-formativas">
         <Intro locale={locale} section={4} />
       </div>
-
-      <Inscripciones locale={locale} />
 
       <Gallery section={2} setFile={setFile} />
 

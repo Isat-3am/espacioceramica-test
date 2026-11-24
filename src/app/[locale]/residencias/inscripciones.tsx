@@ -39,19 +39,19 @@ const Inscripciones = ({ locale }: { locale: string }) => {
   // Lo que no tenga tipo (datos viejos) cuenta como residencia.
   const columnas = [
     {
-      key: "experiencia",
-      title: t("typeExperiencias"),
-      items: data.filter((i) => i.tipo === "experiencia"),
-    },
-    {
       key: "residencia",
       title: t("typeResidencias"),
       items: data.filter((i) => i.tipo !== "experiencia"),
     },
+    {
+      key: "experiencia",
+      title: t("typeExperiencias"),
+      items: data.filter((i) => i.tipo === "experiencia"),
+    },
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row items-start gap-4 pt-20">
+    <div className="flex flex-col lg:flex-row items-start gap-4 pt-12">
       <div className="lg:w-1/4">
         <h2 className="text-sm font-[--lastik-regular] uppercase">
           {t("register")}
@@ -60,7 +60,9 @@ const Inscripciones = ({ locale }: { locale: string }) => {
       <div className="lg:w-3/4 w-full flex flex-col lg:flex-row gap-x-4 gap-y-10">
         {columnas.map((col) => (
           <div key={col.key} className="flex-1 flex flex-col gap-y-2 w-full">
-            <h3 className="text-sm font-[--lastik-regular] uppercase mb-2">
+            {/* Subtitulo de la columna: letra normal (Satoshi) con linea negra abajo, como las filas
+                de `Info` de la ficha de producto. Asi se distingue del titulo "Inscripcion" (Lastik). */}
+            <h3 className="text-sm uppercase leading-4 pb-2 mb-2 border-b border-black">
               {col.title}
             </h3>
             {col.items.length === 0 ? (
