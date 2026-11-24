@@ -167,6 +167,10 @@ Mensaje corto al dev:
 - [ ] Artesanas: apagar los pledges de Substack y probar si Stripe acepta Argentina.
 - [ ] Limpieza opcional: variables de Vercel sin uso (`MP_ACCESS_TOKEN`, `ORDER_API_TOKEN`, `ORDER_NOTIFY_EMAIL`), archivos sobrantes en `Dev\Originales\backup-noviembre`, revocar el token viejo de GitHub.
 
+### Panel de Presentaciones (24/11/2026)
+- "Top" ahora se elige con flechas de 0 a N-1 y las presentaciones se renumeran al guardar (antes estaban todas en 0). La etiqueta "Pasantias" del panel pasó a "Experiencias Formativas". Archivo y notas en `docs/backend/presentaciones/`. Solo en test; para el sitio real se sube junto con lo demás.
+- El sitio toma las presentaciones por posición (0 Inicio, 1 Espacio Cerámica, 2 Residencias, 3 Hornos, 4 Experiencias Formativas): no reordenar las existentes.
+
 ### Test al día con la tienda real (24/11/2026)
 - Se comparó la lista pública y el detalle de cada producto (título, textos, categoría, autor, precios, stock, medidas, cantidad de fotos) entre la tienda real y el test. Desde el backup del 11/11 la real cambió: se agregó "Plato de porcelana" (`porcelane-dish`, id 158) y se sacaron "Horizonte" (`horizon`) y "Par perfecto" (`perfect-pair`). Los otros 67 productos, incluido el stock, estaban iguales.
 - Se actualizó solo el test: se cargó el plato nuevo (es y en, 4 fotos pasadas a WebP calidad 92) y se sacaron los dos productos. Respaldo en `items_bk_20261124` e `images_bk_20261124`. Resultado: 69 y 69 productos, 0 diferencias.
