@@ -60,7 +60,9 @@ const Inscripciones = ({ locale }: { locale: string }) => {
       <div className="lg:w-3/4 w-full flex flex-col lg:flex-row gap-x-4 gap-y-10">
         {columnas.map((col) => (
           <div key={col.key} className="flex-1 flex flex-col gap-y-2 w-full">
-            <h3 className="text-sm font-[--lastik-regular] uppercase mb-2">
+            {/* Subtitulo de la columna: letra normal (Satoshi) con linea negra abajo, como las filas
+                de `Info` de la ficha de producto. Asi se distingue del titulo "Inscripcion" (Lastik). */}
+            <h3 className="text-sm uppercase leading-4 pb-2 mb-2 border-b border-black">
               {col.title}
             </h3>
             {col.items.length === 0 ? (
