@@ -141,3 +141,28 @@ Mensaje corto al dev:
 - [ ] Que la artesana revise el test y pida cambios; después, su OK.
 - [ ] Credenciales de Mercado Pago reales (aplicación de las artesanas compartida con la cuenta de Developers de Marco).
 - [ ] Probar con sesión en `backend-test` la traducción automática en los paneles y una subida real de foto (se probó solo con una subida simulada).
+
+## Avance (24/11/2026)
+
+### Hecho y probado (todo en el test, PR 33 a 39)
+- **Residencias, animación de botones** (PR 34): al tocar un botón baja la opacidad con transición suave.
+- **Pasantías pasa a "Experiencias Formativas"** (PR 35): menú, botón y título de la sección (en inglés "Educational Experiences"). El texto sale de la presentación id 76 del panel (`title` y `title_en`).
+- **Descripción de Residencias**: el texto cargado en el panel (Presentaciones > Residencias, id 74) antes no se mostraba; ahora aparece bajo el logo. En PC va más separado del logo. El título no se repite porque el logo ya dice "Residencias". La página pide `/intros/{idioma}` (antes tenía fijo `ESP`).
+- **Inscripciones por tipo** (PR 35, 37, 38 y 39): el panel de residencias tiene el selector "Tipo de inscripción" (Experiencias formativas o Residencias; agrega solo la columna `tipo` si falta). En el sitio hay dos columnas, **Residencias primero** y Experiencias formativas después (una arriba de la otra en celular). La sección Inscripción va arriba de Experiencias Formativas y tiene su botón, primero en el menú de la página. Subtítulos de columna con letra normal y línea negra (como las filas `Info`). Si una columna está vacía dice "Por ahora no hay inscripciones abiertas a experiencias formativas / a residencias". Si no hay ninguna, la sección se oculta.
+- **PayPal otra vez visible** (PR 36): es un link de PayPal.Me (`paypal.me/DaianaLopez991`, cuenta de un familiar de las artesanas), no una integración. Abre con el monto en dólares cargado y el texto avisa que se cobra solo en USD. El link **no puede obligar** la moneda; para eso hay que bloquear pagos en monedas no tenidas (preferencias de la cuenta de PayPal, confirmar en la cuenta) o hacer la integración con cuenta Business (pendiente, con guía en PDF). El texto del aviso lo escribí yo (clave `paypalInfo`); Marco pedirá correcciones.
+- **Mercado Pago y compradores del exterior:** según el soporte, el pago con tarjeta pide documento local (DNI/CUIT), por eso PayPal sigue haciendo falta para el exterior (confirmar con una prueba o con el soporte). Comisiones de Checkout Pro: 6,29 % al instante, 4,39 % a 10 días, 3,39 % a 18 y 1,49 % a 35 (más IVA; varía por provincia y plazo).
+- **Substack, "compromiso de pago":** son *pledges*, vienen activados por defecto en todo Substack gratuito. Se cargan tarjeta pero no se cobra nada; se convierten en suscripción paga si algún día se activan los pagos. Se apagan en Configuración > Pagos ("Allow readers to pledge subscriptions") y el aviso por mail en Notificaciones. Stripe es el único medio de cobro de Substack y Argentina no figura en su lista de países (stripe.com/global): conviene que la administradora apague los pledges y pruebe "Connect Stripe" una vez.
+
+### Para publicar en el sitio real (se suma a la lista del 11/11)
+- Cambiar en la base real la presentación id 76: `title` = "Experiencias Formativas", `title_en` = "Educational Experiences".
+- Subir `residencias.php` y el bloque de rutas de residencias en `api/apis.php` (`docs/backend/residencias/`); agrega la columna `tipo` sola. Cargar luego los tipos de cada inscripción desde el panel.
+- Cargar la descripción real de Residencias en Presentaciones (hoy en test dice "titulo de residencia prueba a ver que pasa"; en la real está vacía).
+- Confirmar el texto de PayPal con las artesanas antes de publicar.
+
+### Pendiente
+- [ ] Correcciones de Marco al texto de PayPal.
+- [ ] Marco: probar con su sesión de panel la traducción automática, una subida real de foto, el selector "Tipo de inscripción" (cargar una experiencia formativa) y reemplazar el texto de prueba de la presentación de Residencias.
+- [ ] Corregir desde el panel las fotos vacías de `yunomi-small` y `porcelain-yunomi`.
+- [ ] Integración de PayPal con cuenta Business (monto y moneda fijados por el sitio) y guía en PDF.
+- [ ] Artesanas: apagar los pledges de Substack y probar si Stripe acepta Argentina.
+- [ ] Limpieza opcional: variables de Vercel sin uso (`MP_ACCESS_TOKEN`, `ORDER_API_TOKEN`, `ORDER_NOTIFY_EMAIL`), archivos sobrantes en `Dev\Originales\backup-noviembre`, revocar el token viejo de GitHub.
