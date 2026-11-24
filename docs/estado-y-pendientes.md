@@ -166,3 +166,7 @@ Mensaje corto al dev:
 - [ ] Integración de PayPal con cuenta Business (monto y moneda fijados por el sitio) y guía en PDF.
 - [ ] Artesanas: apagar los pledges de Substack y probar si Stripe acepta Argentina.
 - [ ] Limpieza opcional: variables de Vercel sin uso (`MP_ACCESS_TOKEN`, `ORDER_API_TOKEN`, `ORDER_NOTIFY_EMAIL`), archivos sobrantes en `Dev\Originales\backup-noviembre`, revocar el token viejo de GitHub.
+
+### Panel de Presentaciones (24/11/2026)
+- "Top" ahora se elige con flechas de 0 a N-1 y las presentaciones se renumeran al guardar (antes estaban todas en 0). La etiqueta "Pasantias" del panel pasó a "Experiencias Formativas". Archivo y notas en `docs/backend/presentaciones/`. Solo en test; para el sitio real se sube junto con lo demás.
+- El sitio toma las presentaciones por posición (0 Inicio, 1 Espacio Cerámica, 2 Residencias, 3 Hornos, 4 Experiencias Formativas): no reordenar las existentes.
