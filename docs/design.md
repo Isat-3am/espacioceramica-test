@@ -79,6 +79,12 @@ Reglas:
 
 **Etapa 1 (hecha, 10/11/2026):** solo título y formulario. En la sección Pasantías de `/residencias` aparece un bloque "Inscripción" con un botón (`ButtonNavigation`) por cada residencia cargada. Cada botón lleva a `/residencias/[slug]`, que muestra el título (`text-3xl lg:text-4xl font-[--lastik-regular] uppercase`), el formulario de Google incrustado y el enlace "Abrir el formulario en una pestaña nueva". El panel carga solo **título** y **link del formulario** (solo se aceptan links de Google Forms). Todo lo demás de esta sección es la **etapa 2, en pausa y sin presupuestar**; el código ya probado está en `docs/backend/residencias-pausado/`.
 
+**Cambios del 24/11/2026:**
+- La sección "Pasantías" pasó a llamarse **Experiencias Formativas** (menú de la página, título de la presentación en el panel; en inglés, *Educational Experiences*). Se cambia en el código (menú y título del documento) y en la base (presentación id 76: `title` y `title_en`).
+- **Cabecera de `/residencias`:** logo a la izquierda y foto a la derecha, como antes. Debajo del logo se muestra la **descripción** de la presentación "Residencias" (panel Presentaciones), en `text-sm`, interlineado `leading-snug`, centrada con el mismo ancho que el logo (`lg:w-2/3 max-w-md`). El **título** de esa presentación no se repite, porque el logo ya dice "Residencias". Si la descripción está vacía, no se muestra nada.
+- **Inscripción:** el título "Inscripción" queda a la izquierda (`lg:w-1/4`) y a su derecha van **dos columnas** (`lg:w-3/4`, mitad y mitad): *Experiencias Formativas* y *Residencias*. Cada columna lleva su subtítulo (`text-sm uppercase font-[--lastik-regular]`) y sus botones (`ButtonNavigation`). En celular, una columna debajo de la otra. Una columna sin inscripciones muestra "Por ahora no hay inscripciones abiertas.". El tipo se elige en el panel de Residencias.
+- Botones de residencias: al hacer clic bajan a media opacidad (misma transición que usan otros botones del sitio).
+
 Diseño propuesto para la etapa 2 (referencia, pendiente de aprobar):
 
 Hoy `/residencias` tiene dos secciones: **Pasantías** (texto fijo y galería) y **Voluntarios** (lista de cuentas de Instagram). La artesana ya puede cambiar las fotos y el texto de Pasantías desde el panel. Voluntarios no cambia.

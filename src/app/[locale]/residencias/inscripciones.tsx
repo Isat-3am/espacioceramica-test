@@ -7,9 +7,12 @@ interface data {
   id: number;
   slug: string;
   title: string;
+  // "experiencia" (Experiencias Formativas) o "residencia"; lo elige la artesana en el panel.
+  tipo?: string;
 }
 
-// Botones de las residencias abiertas: cada uno lleva a la pagina con el formulario de inscripcion.
+// Inscripciones abiertas, en dos columnas: Experiencias Formativas y Residencias.
+// Cada boton lleva a la pagina con el formulario de inscripcion. En celular, una columna arriba de la otra.
 const Inscripciones = ({ locale }: { locale: string }) => {
   const t = useTranslations("Residencias");
   const [data, setData] = useState<data[]>([]);
@@ -30,8 +33,22 @@ const Inscripciones = ({ locale }: { locale: string }) => {
     getData();
   }, []);
 
-  // Sin residencias cargadas no se muestra nada.
+  // Sin inscripciones cargadas no se muestra nada.
   if (data.length === 0) return null;
+
+  // Lo que no tenga tipo (datos viejos) cuenta como residencia.
+  const columnas = [
+    {
+      key: "experiencia",
+      title: t("typeExperiencias"),
+      items: data.filter((i) => i.tipo === "experiencia"),
+    },
+    {
+      key: "residencia",
+      title: t("typeResidencias"),
+      items: data.filter((i) => i.tipo !== "experiencia"),
+    },
+  ];
 
   return (
     <div className="flex flex-col lg:flex-row items-start gap-4 pt-20">
@@ -40,13 +57,24 @@ const Inscripciones = ({ locale }: { locale: string }) => {
           {t("register")}
         </h2>
       </div>
-      <div className="lg:w-1/2 flex flex-col gap-y-2 w-full">
-        {data.map((item) => (
-          <ButtonNavigation
-            key={item.id}
-            label={item.title}
-            href={"/residencias/" + item.slug}
-          />
+      <div className="lg:w-3/4 w-full flex flex-col lg:flex-row gap-x-4 gap-y-10">
+        {columnas.map((col) => (
+          <div key={col.key} className="flex-1 flex flex-col gap-y-2 w-full">
+            <h3 className="text-sm font-[--lastik-regular] uppercase mb-2">
+              {col.title}
+            </h3>
+            {col.items.length === 0 ? (
+              <p className="text-sm opacity-70">{t("noneOpen")}</p>
+            ) : (
+              col.items.map((item) => (
+                <ButtonNavigation
+                  key={item.id}
+                  label={item.title}
+                  href={"/residencias/" + item.slug}
+                />
+              ))
+            )}
+          </div>
         ))}
       </div>
     </div>

@@ -63,7 +63,10 @@
     "back": "← Residencias",
     "openForm": "Abrir el formulario en una pestaña nueva",
     "loadingForm": "Cargando formulario...",
-    "notFound": "No encontramos esta residencia."
+    "notFound": "No encontramos esta residencia.",
+    "typeExperiencias": "Experiencias Formativas",
+    "typeResidencias": "Residencias",
+    "noneOpen": "Por ahora no hay inscripciones abiertas."
   },
   "Contact": {
     "title": "Contacto",

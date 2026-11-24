@@ -4,14 +4,22 @@
 
 Flight::route('GET /residencias/@lang', function ($lang) {
   // En el orden que eligio la artesana en el panel (posicion 1 primero).
-  $statement = Flight::db()->prepare('SELECT id, slug, title FROM residencias WHERE active = 1 ORDER BY top DESC, id DESC');
-  $statement->execute();
+  // "tipo": experiencia (Experiencias formativas) o residencia. Si la tabla todavia no tiene esa
+  // columna, se leen igual y todas cuentan como residencia.
+  try {
+    $statement = Flight::db()->prepare('SELECT id, slug, title, tipo FROM residencias WHERE active = 1 ORDER BY top DESC, id DESC');
+    $statement->execute();
+  } catch (Throwable $e) {
+    $statement = Flight::db()->prepare('SELECT id, slug, title FROM residencias WHERE active = 1 ORDER BY top DESC, id DESC');
+    $statement->execute();
+  }
   $items = [];
   foreach ($statement->fetchAll() as $row) {
     $items[] = [
       'id' => intval($row['id']),
       'slug' => $row['slug'],
       'title' => $row['title'],
+      'tipo' => ($row['tipo'] ?? '') === 'experiencia' ? 'experiencia' : 'residencia',
     ];
   }
   Flight::json($items ?: null);
