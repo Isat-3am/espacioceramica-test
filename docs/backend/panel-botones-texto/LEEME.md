@@ -7,3 +7,9 @@ En todas las listas del panel, el ícono del papel ahora dice "Editar" y el del 
 - `presentaciones.php` ya incluye lo de "Top con flechas"; `voluntarios.php` ya incluye "Residentes". Si el panel real tiene otras diferencias, aplicar solo el cambio de los íconos en vez de reemplazar el archivo.
 
 Aplicado en backend-test el 25/11/2026. Para el sitio real se sube junto con el resto de la publicación. Copias de los originales en el scratchpad de la sesión, no en el repo.
+
+## Residencias y Experiencias Formativas: orden por tipo (25/11/2026)
+- El menú del panel dice "Residencias y Exp. Formativas" (en dos renglones); `docs/backend/panel-residentes/header.php` ya lo incluye.
+- Los títulos pasan a "Agregar / Modificar Residencia o Experiencia Formativa" y la lista a "Residencias y Experiencias Formativas".
+- Cada tipo tiene su propio orden: el selector de posición cambia al elegir el tipo (solo ofrece las posiciones de ese tipo), al guardar solo se renumeran las del mismo tipo y, si una inscripción cambia de tipo, el tipo que deja se renumera sin hueco. La lista muestra la posición dentro de su tipo.
+- Probado en backend-test con una simulación dentro de una transacción que se revirtió (3 experiencias de prueba, reordenar, volver atrás); las 2 residencias quedaron igual.
