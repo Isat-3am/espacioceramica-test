@@ -1,0 +1,237 @@
+<?php
+
+require_once('./utilities/session.php');
+require_once('./utilities/functions.php');
+require_once('./db/connection.php');
+
+$file_main = "about";
+$table = "authors";
+$sec = 2;
+
+if (isset($_POST['form'])) {
+
+  foreach ($_POST as $campo => $valor) {
+    $cadena = "\$" . $campo . "='" . addslashes($valor) . "';";
+    eval($cadena);
+  }
+
+  $data = "userfile1";
+  if ($_FILES[$data]['name']) {
+    $image = "ec_" . GenerateString(12) . ".jpg";
+    $width = 1080;
+    require_once("./utilities/create_image.php");
+  } else $image = "";
+
+  $data = "userfile2";
+  if ($_FILES[$data]['name']) {
+    $image_2 = "ec_" . GenerateString(12) . ".jpg";
+    $width = 1080;
+    require_once("./utilities/create_image_2.php");
+  } else $image_2 = "";
+
+  $data = "userfile3";
+  if ($_FILES[$data]['name']) {
+    $file = "cv_" . GenerateString(12) . ".pdf";
+    copy($_FILES[$data]['tmp_name'], "./files/" . $file);
+  } else $file = "";
+
+  if ($action == 'Agregar') {
+
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    try {
+      $sql = 'INSERT INTO authors  (`title`, `text`, `text_en`, `ig`, `top`, `image`, `image_2`, `file`)
+      VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )';
+
+      $statement = $pdo->prepare($sql);
+      $statement->execute([
+        $title,
+        $text,
+        $text_en,
+        $ig,
+        $top,
+        $image,
+        $image_2,
+        $file
+      ]);
+
+      header("Location:$file_main");
+    } catch (PDOException $e) {
+      echo "Error en la consulta: " . $e->getMessage();
+    }
+  } else {
+    $sql = 'UPDATE authors SET `title` = "' . $title  . '", `text` = "' . $text . '", `text_en` = "' . $text_en . '", `top` = "' . $top . '", `ig` = "' . $ig . '"';
+
+    if ($_FILES['userfile1']['name']) $sql .= ", `image` = '$image' ";
+    if ($_FILES['userfile2']['name']) $sql .= ", `image_2` = '$image_2' ";
+    if ($_FILES['userfile3']['name']) $sql .= ", `file` = '$file' ";
+
+    $sql .= " WHERE `id` = $id;";
+    $statement = $pdo->prepare($sql);
+    $statement->execute();
+    header("Location:$file_main");
+  }
+}
+if (isset($_GET['add'])) {
+
+  $action = 'Agregar';
+  $title_sec = "Agregar  Acerca de";
+} else if (isset($_GET['edit'])) {
+
+  $action = 'Modificar';
+  $title_sec = "Modificar Acerca de";
+  $id_select = $_GET['i'];
+  $sql = "SELECT * FROM authors WHERE id = $id_select";
+  $statement = $pdo->prepare($sql);
+  $statement->execute();
+  $results = $statement->fetch();
+} else if (isset($_POST['delete'])) {
+
+  $id_select = $_POST['id'];
+  $sql = "DELETE FROM authors WHERE id = $id_select";
+  $statement = $pdo->prepare($sql);
+  $statement->execute();
+  header("Location:$file_main");
+} else {
+
+  $title_sec = "Acerca de";
+  $sql = "SELECT * FROM authors ORDER BY top DESC";
+  $statement = $pdo->prepare($sql);
+  $statement->execute();
+  $results = $statement->fetchAll();
+  $total = $statement->rowCount();
+}
+require("includes/head.php");
+
+?>
+
+<body class="bg-dark">
+  <main>
+    <?php
+    require("includes/header.php");
+    if (isset($_GET['mod'])) {
+    ?>
+      <section class="p-3 p-lg-5 p-md-4 text-white">
+        <div class="row mb-5">
+          <h2><strong><?php echo $title_sec ?></strong> </h2>
+        </div>
+        <form method="POST" name="form" enctype="multipart/form-data">
+          <div class="row mb-5">
+
+            <div class="col col-12 col-md-6 mb-3 pe-md-3">
+              <label class="form-label">Nombre y Apellido</label>
+              <input type="text" name="title" class="form-control bg-transparent text-white mb-2" value="<?php if (isset($results['title'])) echo ($results['title']) ?>" />
+            </div>
+            <div class="col col-12 col-md-6 mb-3">
+              <label class="form-label">Usuario en Instagram</label>
+              <input type="text" name="ig" class="form-control bg-transparent text-white mb-2" value="<?php if (isset($results['ig'])) echo ($results['ig']) ?>" />
+            </div>
+
+            <div class="col col-12 col-md-6 mb-3 pe-md-3">
+              <label class="form-label">Descripción (Spanish)</label>
+              <textarea name="text" cols="30" rows="5" class="form-control bg-transparent text-white mb-2"><?php if (isset($results['text'])) echo ($results['text']) ?></textarea>
+            </div>
+            <div class="col col-12 col-md-6 mb-3">
+              <label class="form-label">Descripción (English)</label>
+              <textarea name="text_en" cols="30" rows="5" class="form-control bg-transparent text-white mb-2"><?php if (isset($results['text_en'])) echo ($results['text_en']) ?></textarea>
+            </div>
+
+            <div class="col col-12 col-md-6 mb-3 pe-md-3">
+              <label class="form-label">Imagen 1</label>
+              <input name="userfile1" class="form-control bg-transparent text-white mb-2" type="file">
+              <div class="row text-secondary">Recomendado: 1080 px de ancho. </div>
+              <?php if (isset($results['image'])) if ($results['image'])  echo '<a href="./images/' . $results['image'] . '" target="_blank" class="opacity"><img src="./images/' . $results['image'] . '" class="mt-3 img-circle-large mb-3" /></a>'; ?>
+            </div>
+            <div class="col col-12 col-md-6 mb-3">
+              <label class="form-label">Imagen 2</label>
+              <input name="userfile2" class="form-control bg-transparent text-white mb-2" type="file">
+              <div class="row text-secondary">Recomendado: 1080 px de ancho. </div>
+              <?php if (isset($results['image_2'])) if ($results['image_2'])  echo '<a href="./images/' . $results['image_2'] . '" target="_blank" class="opacity"><img src="./images/' . $results['image_2'] . '" class="mt-3 img-circle-large mb-3" /></a>'; ?>
+            </div>
+
+            <div class="col col-12 col-md-6 mb-3 pe-md-3">
+              <label class="form-label">CV (PDF)</label>
+              <input name="userfile3" class="form-control bg-transparent text-white mb-2" type="file">
+              <?php if (isset($results['file'])) if ($results['file'])  echo '<a href="./files/' . $results['file'] . '" target="_blank" class="opacity">Ver CV</a>'; ?>
+            </div>
+            <div class="col col-12 col-md-6 mb-3">
+              <label class="form-label">Top</label>
+              <input type="number" name="top" class="form-control bg-transparent text-white mb-2" value="<?php if (isset($results['top'])) echo ($results['top']) ?>" />
+              <div class="row text-secondary">Número de prioridad en los resultados.</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col col-12">
+              <button type="button" class="rounded-2 btn btn-primary mybtn" onClick="javascript:document.form.submit();"><?php echo $action ?></button>
+              <button type="button" class="rounded-2 btn btn-secondary mybtn mx-2" onClick="javascript:history.back();">Cancelar</button>
+            </div>
+          </div>
+          <input type="hidden" name="form" value="1">
+          <input type="hidden" name="action" value="<?php echo $action ?>">
+          <input type="hidden" name="id" value="<?php echo $id_select ?>">
+        </form>
+      </section>
+
+    <?php } else { ?>
+
+      <section class="p-3 p-lg-5 p-md-4 text-white">
+        <div class="row mb-4">
+          <div class="col-md-10 mb-2">
+            <h2><strong><?php echo $title_sec ?></strong> (<?php echo $total ?>)</h2>
+          </div>
+          <div class="col-md-2">
+            <a href="?mod=1&add=1" class="rounded-2 btn btn-primary mybtn w-100">Agregar</a>
+          </div>
+        </div>
+
+        <?php
+        if ($total) {
+        ?>
+          <table class="table table-dark table-hover">
+            <thead>
+              <tr class="text-secondary">
+                <th scope="col">Imagen</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Top</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <?php
+              foreach ($results as $row) {
+                $id = $row['id'];
+                $image = $row['image'];
+                $title = $row['title'];
+                $top = $row['top'];
+              ?>
+                <tr>
+                  <td valign="middle">
+                    <?php if ($image) echo '<img src="./images/' . $image . '" class="img-circle-large" />'; ?>
+                  </td>
+                  <td valign="middle" class="text-primary">
+                    <strong><?php echo $title; ?></strong>
+                  </td>
+                  <td valign="middle">
+                    <?php echo $top; ?>
+                  </td>
+                  <td valign="middle" align="right">
+                    <a href="?mod=1&edit=1&i=<?php echo $id ?>" class="circle circle-btn bg-transparent"><i class="bi bi-file-earmark-text"></i> Editar</a>
+                    <a href="#" class="circle circle-btn bg-transparent delete" data-id="<?php echo $id ?>"><i class="bi bi-trash-fill"></i> Eliminar</a>
+                  </td>
+                </tr>
+              <?php
+              }
+              ?>
+            </tbody>
+          </table>
+        <?php } ?>
+      </section>
+    <?php
+    }
+    require("includes/footer.php");
+    ?>
+  </main>
+</body>
+
+</html>

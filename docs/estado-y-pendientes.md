@@ -182,3 +182,4 @@ Mensaje corto al dev:
 - Residencias: "Voluntarios" pasó a "Residentes" (botón y título); más margen al ir a cada sección desde el menú (la barra de 3 botones tapaba el título de Inscripción); se borró el texto de prueba de la descripción de Residencias en el test (falta cargar la real desde el panel).
 - Carrito: el total en USD mostraba el total en pesos con la sigla USD; ahora suma los precios en dólares.
 - Panel: el menú y los títulos de "Voluntarios" pasaron a "Residentes" en backend-test (archivos en `docs/backend/panel-residentes/`); falta aplicarlo al panel real al publicar.
+- Panel: botones "Editar" y "Eliminar" con texto en todas las listas (archivos en `docs/backend/panel-botones-texto/`); aplicado en backend-test, falta en el panel real al publicar.

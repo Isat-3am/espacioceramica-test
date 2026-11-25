@@ -1,0 +1,177 @@
+:root {
+  --bs-color-main: #f33434;
+}
+a {
+  color: var(--bs-color-main);
+  text-decoration: none !important;
+}
+a:hover {
+  color: white;
+  text-decoration: none !important;
+}
+.bg-primary {
+  background-color: var(--bs-color-main) !important;
+}
+.text-primary,
+.form-label,
+.circle {
+  color: var(--bs-color-main) !important;
+}
+a:hover {
+  text-decoration: underline;
+}
+.border-primary,
+.form-control,
+.circle {
+  border-color: var(--bs-color-main) !important;
+}
+.btn-primary {
+  background-color: var(--bs-color-main);
+  border: 0;
+}
+.btn-primary:hover {
+  background-color: #434867;
+}
+.form-control::-moz-placeholder {
+  color: var(--bs-color-main);
+  font-weight: 600;
+  opacity: 1;
+}
+.form-control::placeholder {
+  color: var(--bs-color-main);
+  font-weight: 600;
+  opacity: 1;
+}
+iframe {
+  margin-top: 15px;
+  width: 100%;
+}
+.link-primary:hover {
+  color: white;
+}
+input,
+.btn,
+.form-select {
+  font-size: 0.9rem;
+  height: 2.8rem;
+}
+.form-select option {
+  background-color: white;
+  color: black;
+}
+input[type="file"] {
+  padding-top: 11px;
+}
+.table > :not(caption) > * > * {
+  padding: 1rem 0.5rem;
+}
+.etiqueta {
+  margin-top: 0.6rem;
+}
+.img-circle,
+.img-circle-large {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
+  width: 3.4rem;
+}
+.img-circle-large {
+  height: 4rem;
+  width: 4rem;
+}
+.circle {
+  border: 1px solid;
+  border-radius: 50%;
+  display: inline-block;
+  height: 35px;
+  margin: 3px;
+  padding-top: 5px;
+  text-align: center;
+  width: 35px;
+}
+.circle:hover {
+  border-color: white !important;
+  color: white !important;
+}
+.mybtn {
+  padding: 10px 3rem;
+}
+.opacity:hover {
+  opacity: 0.7;
+}
+.select-fecha {
+  display: inline-block;
+  width: 32%;
+}
+.creditos {
+  bottom: 40px;
+  font-size: 0.9rem;
+  position: absolute;
+}
+.w-40 {
+  width: 40%;
+}
+.placeholder-center::placeholder {
+  text-align: center;
+}
+.flex-center {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+.flex-list {
+  display: flex;
+  justify-content: space-between;
+}
+.btn {
+  font-weight: 600;
+}
+.login-main {
+  /* background-image: url("../images/blob-haikei.svg"); */
+  background-size: cover;
+  height: 100vh;
+}
+.login-container {
+  font-size: 0.9rem;
+  width: 350px;
+}
+.login-container input {
+  border: 0;
+  margin-top: 4px;
+}
+.login-container h1 {
+  font-size: 3.5rem;
+}
+.text-right {
+  text-align: right;
+}
+
+@media (max-width: 980px) {
+  body {
+    font-size: 0.9rem;
+  }
+  .nomobile {
+    display: none;
+  }
+  .img-circle-large {
+    height: 4rem;
+    width: 4rem;
+  }
+  .w-40 {
+    width: 60%;
+  }
+}
+
+/* Botones Editar / Eliminar con texto al lado del icono */
+.circle.circle-btn {
+  border-radius: 2rem;
+  height: auto;
+  margin: 3px 2px;
+  padding: 0.25rem 0.8rem;
+  white-space: nowrap;
+  width: auto;
+}
+.circle-btn i {
+  margin-right: 0.3rem;
+}
