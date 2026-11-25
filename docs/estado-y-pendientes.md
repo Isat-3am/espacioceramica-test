@@ -184,3 +184,5 @@ Mensaje corto al dev:
 - Panel: el menú y los títulos de "Voluntarios" pasaron a "Residentes" en backend-test (archivos en `docs/backend/panel-residentes/`); falta aplicarlo al panel real al publicar.
 - Panel: botones "Editar" y "Eliminar" con texto en todas las listas (archivos en `docs/backend/panel-botones-texto/`); aplicado en backend-test, falta en el panel real al publicar.
 - Panel Residencias y Exp. Formativas: menú en dos renglones, títulos que incluyen ambos tipos y orden propio por tipo (selector de posición según el tipo). Aplicado en backend-test; falta en el panel real al publicar (`docs/backend/panel-botones-texto/residencias.php` + `panel-residentes/header.php`).
+- Panel: campos de número con botones - y + siempre visibles y grandes (también en celular); aplicado en backend-test, falta en el panel real al publicar (`panel-botones-texto/footer.php` y `custom.css`).
+- Test: se cargó la inscripción "Experiencia Formativa 1 Febrero 2027" (tipo experiencia, sin descripción) con el formulario de Google que pasó Marco. Dato de prueba del test, no del sitio real.
