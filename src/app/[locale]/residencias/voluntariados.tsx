@@ -35,7 +35,7 @@ const page = ({ locale }: { locale: string }) => {
 
   return (
     <div
-      className="w-full flex flex-col lg:flex-row items-start gap-4 pt-20 scroll-mt-12 pb-12"
+      className="w-full flex flex-col lg:flex-row items-start gap-4 pt-20 scroll-mt-20 pb-12"
       id="voluntariados"
     >
       <div className="lg:w-1/4">

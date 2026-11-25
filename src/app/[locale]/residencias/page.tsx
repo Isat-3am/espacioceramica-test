@@ -102,11 +102,11 @@ const page = () => {
         />
       </div>
 
-      <div className="scroll-mt-12" id="inscripciones">
+      <div className="scroll-mt-20" id="inscripciones">
         <Inscripciones locale={locale} />
       </div>
 
-      <div className="scroll-mt-12" id="experiencias-formativas">
+      <div className="scroll-mt-20" id="experiencias-formativas">
         <Intro locale={locale} section={4} />
       </div>
 
