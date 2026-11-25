@@ -3,6 +3,7 @@
 require_once('./utilities/session.php');
 require_once('./utilities/functions.php');
 require_once('./db/connection.php');
+require_once('./utilities/orden.php');
 
 $file_main = "voluntarios";
 $table = "items";
@@ -28,20 +29,21 @@ if (isset($_POST['form'])) {
         $sec,
         $title,
         $title_en,
-        $top,
+        0,
         $text
       ]);
-
-      header("Location:$file_main");
+orden_mover($pdo, 'items', 'type = ?', [$sec], $pdo->lastInsertId(), $top);
+header("Location:$file_main");
     } catch (PDOException $e) {
       echo "Error en la consulta: " . $e->getMessage();
     }
   } else {
-    $sql = 'UPDATE items SET `title` = "' . $title  . '", `title_en` = "' . $title_en . '", `top` = "' . $top . '", `text` = "' . $text . '" ';
+    $sql = 'UPDATE items SET `title` = "' . $title  . '", `title_en` = "' . $title_en . '", `text` = "' . $text . '" ';
 
     $sql .= " WHERE `id` = $id;";
     $statement = $pdo->prepare($sql);
     $statement->execute();
+    orden_mover($pdo, 'items', 'type = ?', [$sec], intval($id), $top);
     header("Location:$file_main");
   }
 }
@@ -74,6 +76,15 @@ if (isset($_GET['add'])) {
   $results = $statement->fetchAll();
   $total = $statement->rowCount();
 }
+// Orden por posicion (1 = primera).
+if (isset($_GET['mod'])) {
+  $orden_ids = orden_ids($pdo, 'items', 'type = ?', [$sec]);
+  $orden_idx = (($action ?? '') == 'Modificar' && isset($id_select)) ? array_search(intval($id_select), $orden_ids, true) : false;
+  $orden_n = $orden_idx !== false ? count($orden_ids) : count($orden_ids) + 1;
+  $orden_sel = $orden_idx !== false ? $orden_idx + 1 : $orden_n;
+} else {
+  $pos_map = array_flip(orden_ids($pdo, 'items', 'type = ?', [$sec]));
+}
 require("includes/head.php");
 
 ?>
@@ -105,9 +116,9 @@ require("includes/head.php");
               <div class="row text-secondary">Incluir https//</div>
             </div>
             <div class="col col-12 col-md-6 mb-3">
-              <label class="form-label">Top</label>
-              <input type="number" name="top" class="form-control bg-transparent text-white mb-2" value="<?php if (isset($results['top'])) echo ($results['top']) ?>" />
-              <div class="row text-secondary">Número de prioridad en los resultados.</div>
+              <label class="form-label">Posición en la web</label>
+              <?php echo orden_selector($orden_n, $orden_sel); ?>
+              <div class="row text-secondary">Elegí en qué lugar se muestra: 1° es la primera. Las demás se acomodan solas.</div>
             </div>
           </div>
           <div class="row">
@@ -142,7 +153,7 @@ require("includes/head.php");
               <tr class="text-secondary">
                 <th scope="col">Nombre</th>
                 <th scope="col">Cuenta</th>
-                <th scope="col">Top</th>
+                <th scope="col">Posición</th>
                 <th scope="col"></th>
               </tr>
             </thead>
@@ -165,7 +176,7 @@ require("includes/head.php");
                     <a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer"><?php echo $cuenta; ?></a>
                   </td>
                   <td valign="middle">
-                    <?php echo $top; ?>
+                    <?php echo isset($pos_map[$id]) ? ($pos_map[$id] + 1) . '&deg;' : '-'; ?>
                   </td>
 
                   <td valign="middle" align="right">

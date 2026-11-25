@@ -3,6 +3,7 @@
 require_once('./utilities/session.php');
 require_once('./utilities/functions.php');
 require_once('./db/connection.php');
+require_once('./utilities/orden.php');
 
 $file_main = "images.php";
 $table = "images";
@@ -42,19 +43,21 @@ if ($_POST) {
     $sql = 'INSERT INTO ' . $table . ' 
 		(`item`, `image`, `top` ) 
 		VALUES 
-		("' . $id_sec  . '", "' . $image . '", "' . $top . '" )';
+		("' . $id_sec  . '", "' . $image . '", "0" )';
 
     $statement = $pdo->prepare($sql);
     $statement->execute();
+    orden_mover($pdo, 'images', 'item = ?', [$id_sec], $pdo->lastInsertId(), $top);
     header("Location:$file_main?id_sec=$id_sec");
   } else if ($action == 'Modificar') {
 
-    $sql = 'UPDATE ' . $table . ' SET  `top` = "' . $top . '"  ';
+    $sql = 'UPDATE ' . $table . ' SET  `top` = `top` ';
     if ($_FILES['userfile1']['name']) $sql .= ", `image` = '$image' ";
     $sql .= " WHERE `id` = $id;";
 
     $statement = $pdo->prepare($sql);
     $statement->execute();
+    orden_mover($pdo, 'images', 'item = ?', [$id_sec], intval($id), $top);
     header("Location:$file_main?id_sec=$id_sec");
   }
 }
@@ -91,6 +94,15 @@ if (isset($_GET['add'])) {
   $total = count($results);
 }
 
+// Orden por posicion (1 = primera).
+if (isset($_GET['mod'])) {
+  $orden_ids = orden_ids($pdo, 'images', 'item = ?', [$id_sec]);
+  $orden_idx = (($action ?? '') == 'Modificar' && isset($id_select)) ? array_search(intval($id_select), $orden_ids, true) : false;
+  $orden_n = $orden_idx !== false ? count($orden_ids) : count($orden_ids) + 1;
+  $orden_sel = $orden_idx !== false ? $orden_idx + 1 : $orden_n;
+} else {
+  $pos_map = array_flip(orden_ids($pdo, 'images', 'item = ?', [$id_sec]));
+}
 require("includes/head.php");
 
 ?>
@@ -115,9 +127,9 @@ require("includes/head.php");
               <?php if (isset($results['image'])) if ($results['image'])  echo '<a href="./images/' . $results['image'] . '" target="_blank" class="opacity"><img src="./images/' . $results['image'] . '" class="mt-3 img-circle-large mb-3" /></a>'; ?>
             </div>
             <div class="col col-12 mb-3">
-              <label class="form-label">Top</label>
-              <input type="number" name="top" class="form-control bg-transparent text-white mb-2" value="<?php if (isset($results['top'])) echo ($results['top']) ?>" />
-              <div class="row text-secondary">Número de prioridad en los resultados.</div>
+              <label class="form-label">Posición en la web</label>
+              <?php echo orden_selector($orden_n, $orden_sel); ?>
+              <div class="row text-secondary">Elegí en qué lugar se muestra: 1° es la primera. Las demás se acomodan solas.</div>
             </div>
           </div>
           <div class="row">
@@ -152,7 +164,7 @@ require("includes/head.php");
             <thead>
               <tr class="text-secondary">
                 <th scope="col">Imagen</th>
-                <th scope="col">Top</th>
+                <th scope="col">Posición</th>
                 <th scope="col"></th>
               </tr>
             </thead>
@@ -170,7 +182,7 @@ require("includes/head.php");
                     ?>
                   </td>
                   <td valign="middle">
-                    <?php echo $top; ?>
+                    <?php echo isset($pos_map[$id]) ? ($pos_map[$id] + 1) . '&deg;' : '-'; ?>
                   </td>
                   <td valign="middle" align="right">
                     <a href="?mod=1&edit=1&i=<?= $id ?>&id_sec=<?= $id_sec ?>" class="circle circle-btn bg-transparent"><i class="bi bi-file-earmark-text"></i> Editar</a>

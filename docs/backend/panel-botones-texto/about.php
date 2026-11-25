@@ -3,6 +3,7 @@
 require_once('./utilities/session.php');
 require_once('./utilities/functions.php');
 require_once('./db/connection.php');
+require_once('./utilities/orden.php');
 
 $file_main = "about";
 $table = "authors";
@@ -49,18 +50,18 @@ if (isset($_POST['form'])) {
         $text,
         $text_en,
         $ig,
-        $top,
+        0,
         $image,
         $image_2,
         $file
       ]);
-
-      header("Location:$file_main");
+orden_mover($pdo, 'authors', '1 = ?', [1], $pdo->lastInsertId(), $top);
+header("Location:$file_main");
     } catch (PDOException $e) {
       echo "Error en la consulta: " . $e->getMessage();
     }
   } else {
-    $sql = 'UPDATE authors SET `title` = "' . $title  . '", `text` = "' . $text . '", `text_en` = "' . $text_en . '", `top` = "' . $top . '", `ig` = "' . $ig . '"';
+    $sql = 'UPDATE authors SET `title` = "' . $title  . '", `text` = "' . $text . '", `text_en` = "' . $text_en . '", `ig` = "' . $ig . '"';
 
     if ($_FILES['userfile1']['name']) $sql .= ", `image` = '$image' ";
     if ($_FILES['userfile2']['name']) $sql .= ", `image_2` = '$image_2' ";
@@ -69,6 +70,7 @@ if (isset($_POST['form'])) {
     $sql .= " WHERE `id` = $id;";
     $statement = $pdo->prepare($sql);
     $statement->execute();
+    orden_mover($pdo, 'authors', '1 = ?', [1], intval($id), $top);
     header("Location:$file_main");
   }
 }
@@ -100,6 +102,15 @@ if (isset($_GET['add'])) {
   $statement->execute();
   $results = $statement->fetchAll();
   $total = $statement->rowCount();
+}
+// Orden por posicion (1 = primera).
+if (isset($_GET['mod'])) {
+  $orden_ids = orden_ids($pdo, 'authors', '1 = ?', [1]);
+  $orden_idx = (($action ?? '') == 'Modificar' && isset($id_select)) ? array_search(intval($id_select), $orden_ids, true) : false;
+  $orden_n = $orden_idx !== false ? count($orden_ids) : count($orden_ids) + 1;
+  $orden_sel = $orden_idx !== false ? $orden_idx + 1 : $orden_n;
+} else {
+  $pos_map = array_flip(orden_ids($pdo, 'authors', '1 = ?', [1]));
 }
 require("includes/head.php");
 
@@ -155,9 +166,9 @@ require("includes/head.php");
               <?php if (isset($results['file'])) if ($results['file'])  echo '<a href="./files/' . $results['file'] . '" target="_blank" class="opacity">Ver CV</a>'; ?>
             </div>
             <div class="col col-12 col-md-6 mb-3">
-              <label class="form-label">Top</label>
-              <input type="number" name="top" class="form-control bg-transparent text-white mb-2" value="<?php if (isset($results['top'])) echo ($results['top']) ?>" />
-              <div class="row text-secondary">Número de prioridad en los resultados.</div>
+              <label class="form-label">Posición en la web</label>
+              <?php echo orden_selector($orden_n, $orden_sel); ?>
+              <div class="row text-secondary">Elegí en qué lugar se muestra: 1° es la primera. Las demás se acomodan solas.</div>
             </div>
           </div>
           <div class="row">
@@ -192,7 +203,7 @@ require("includes/head.php");
               <tr class="text-secondary">
                 <th scope="col">Imagen</th>
                 <th scope="col">Nombre</th>
-                <th scope="col">Top</th>
+                <th scope="col">Posición</th>
                 <th scope="col"></th>
               </tr>
             </thead>
@@ -213,7 +224,7 @@ require("includes/head.php");
                     <strong><?php echo $title; ?></strong>
                   </td>
                   <td valign="middle">
-                    <?php echo $top; ?>
+                    <?php echo isset($pos_map[$id]) ? ($pos_map[$id] + 1) . '&deg;' : '-'; ?>
                   </td>
                   <td valign="middle" align="right">
                     <a href="?mod=1&edit=1&i=<?php echo $id ?>" class="circle circle-btn bg-transparent"><i class="bi bi-file-earmark-text"></i> Editar</a>
