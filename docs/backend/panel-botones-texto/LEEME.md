@@ -25,3 +25,5 @@ Se sacaron los botones − y + (quedaban mal ubicados). Ahora las flechas nativa
 - Cada grupo tiene su propio orden: productos, hornos, residentes, Nosotros, cada sección de galería, y las fotos de cada producto/horno.
 - Presentaciones sigue guardando el mismo número de siempre (el sitio las toma por posición); solo cambia cómo se elige.
 - Para el sitio real: antes de subir, comparar cada archivo con el del panel real y aplicar solo estos cambios si hay otras diferencias.
+
+`head.php` va en `includes/head.php`: la hoja de estilos se pide con `?v=20261125b` (custom.css?v=...) para que el navegador y Cloudflare no sigan mostrando la versión vieja (el CSS se guardaba 7 días en caché). Cada vez que se cambie `custom.css`, cambiar ese número.
