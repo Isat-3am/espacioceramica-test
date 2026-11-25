@@ -8,6 +8,11 @@ const CartResume = () => {
   const { items, total, removeItem, incrementQuantity, decrementQuantity } =
     useCart();
   const t = useTranslations("Cart");
+  // El total en dolares se suma con los precios en USD (antes se mostraba el total en pesos con la sigla USD).
+  const totalUsd = items.reduce(
+    (acc, i) => acc + Number(i.price_usd) * i.quantity,
+    0,
+  );
 
   return (
     <div className="flex flex-col gap-y-8">
@@ -68,7 +73,7 @@ const CartResume = () => {
           <div>{t("total")}</div>
           <div className="flex flex-col leading-4">
             <span>{formatPrice(total, "ARS")}</span>
-            <span>{formatPrice(total, "USD")}</span>
+            <span>{formatPrice(totalUsd, "USD")}</span>
           </div>
         </div>
       </div>
