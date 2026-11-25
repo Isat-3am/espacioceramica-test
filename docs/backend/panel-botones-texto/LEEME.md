@@ -13,3 +13,6 @@ Aplicado en backend-test el 25/11/2026. Para el sitio real se sube junto con el 
 - Los títulos pasan a "Agregar / Modificar Residencia o Experiencia Formativa" y la lista a "Residencias y Experiencias Formativas".
 - Cada tipo tiene su propio orden: el selector de posición cambia al elegir el tipo (solo ofrece las posiciones de ese tipo), al guardar solo se renumeran las del mismo tipo y, si una inscripción cambia de tipo, el tipo que deja se renumera sin hueco. La lista muestra la posición dentro de su tipo.
 - Probado en backend-test con una simulación dentro de una transacción que se revirtió (3 experiencias de prueba, reordenar, volver atrás); las 2 residencias quedaron igual.
+
+## Campos de número con botones - y + (25/11/2026)
+Todos los campos de número del panel (stock, precios, Top) tienen botones "−" y "+" grandes y siempre visibles, que también sirven en el celular. Respetan mínimo, máximo y paso del campo. `footer.php` va en `includes/footer.php` (agrega el script) y `custom.css` en `css/custom.css`. Si el panel real tiene otro `footer.php`, agregar solo el bloque `<script>` de los botones antes del bloque `<?php` final.
