@@ -32,7 +32,7 @@
             <a class="nav-link <?php if ($sec == 7) echo "active"; ?>" href="presentaciones">Presentaciones</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php if ($sec == 8) echo "active"; ?>" href="residencias">Residencias</a>
+            <a class="nav-link <?php if ($sec == 8) echo "active"; ?>" href="residencias">Residencias<br>y Exp. Formativas</a>
           </li>
           <li class="nav-item">
             <a class="nav-link <?php if ($sec == 9) echo "active"; ?>" href="newsletter">Newsletter</a>

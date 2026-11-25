@@ -40,18 +40,31 @@ try {
 }
 
 // Orden manual: la posicion 1 es la primera que se ve en la web.
-// Se guarda en la columna `top` (el valor mas alto va primero), renumerando todas.
-function reordenar($pdo, $id, $posicion)
+// Cada tipo (residencia / experiencia formativa) tiene su propio orden.
+// Se guarda en la columna `top` (el valor mas alto va primero), renumerando las del mismo tipo.
+function ids_del_tipo($pdo, $tipo, $excluir = 0)
 {
-  $ids = $pdo->query('SELECT id FROM residencias ORDER BY top DESC, id DESC')->fetchAll(PDO::FETCH_COLUMN);
-  $ids = array_values(array_filter($ids, fn($x) => intval($x) !== intval($id)));
-  $posicion = max(1, min(count($ids) + 1, intval($posicion)));
-  array_splice($ids, $posicion - 1, 0, [intval($id)]);
+  $statement = $pdo->prepare('SELECT id FROM residencias WHERE tipo = ? ORDER BY top DESC, id DESC');
+  $statement->execute([$tipo]);
+  $ids = $statement->fetchAll(PDO::FETCH_COLUMN);
+  return array_values(array_filter($ids, fn($x) => intval($x) !== intval($excluir)));
+}
+
+function guardar_orden($pdo, $ids)
+{
   $n = count($ids);
   $statement = $pdo->prepare('UPDATE residencias SET top = ? WHERE id = ?');
   foreach ($ids as $i => $rid) {
     $statement->execute([$n - $i, intval($rid)]);
   }
+}
+
+function reordenar($pdo, $id, $posicion, $tipo)
+{
+  $ids = ids_del_tipo($pdo, $tipo, $id);
+  $posicion = max(1, min(count($ids) + 1, intval($posicion)));
+  array_splice($ids, $posicion - 1, 0, [intval($id)]);
+  guardar_orden($pdo, $ids);
 }
 
 if (isset($_POST['form'])) {
@@ -78,10 +91,17 @@ if (isset($_POST['form'])) {
         $statement->execute([getSlug($title) . '-' . $new_id, $new_id]);
         $id = $new_id;
       } else {
+        $statement = $pdo->prepare('SELECT tipo FROM residencias WHERE id = ?');
+        $statement->execute([$id]);
+        $tipo_anterior = $statement->fetchColumn();
         $statement = $pdo->prepare('UPDATE residencias SET title = ?, text = ?, form_url = ?, tipo = ? WHERE id = ?');
         $statement->execute([$title, $text, $form_url, $tipo, $id]);
       }
-      reordenar($pdo, $id, $posicion);
+      reordenar($pdo, $id, $posicion, $tipo);
+      // Si cambio de tipo, el tipo que dejo se vuelve a numerar sin hueco.
+      if (!empty($tipo_anterior) && $tipo_anterior !== $tipo) {
+        guardar_orden($pdo, ids_del_tipo($pdo, $tipo_anterior));
+      }
       header("Location:$file_main");
       die();
     } catch (PDOException $e) {
@@ -92,7 +112,7 @@ if (isset($_POST['form'])) {
   // Hubo un error: se vuelve a mostrar el formulario con lo que se habia escrito.
   $results = ['title' => $title, 'text' => $text, 'form_url' => $form_url, 'tipo' => $tipo];
   $action = $action ?: 'Agregar';
-  $title_sec = $action == 'Agregar' ? "Agregar Residencia" : "Modificar Residencia";
+  $title_sec = $action == 'Agregar' ? "Agregar Residencia o Experiencia Formativa" : "Modificar Residencia o Experiencia Formativa";
   $id_select = $id;
   $_GET['mod'] = 1;
 } else if (isset($_POST['delete'])) {
@@ -101,37 +121,51 @@ if (isset($_POST['form'])) {
   die();
 } else if (isset($_GET['add'])) {
   $action = 'Agregar';
-  $title_sec = "Agregar Residencia";
+  $title_sec = "Agregar Residencia o Experiencia Formativa";
   $id_select = 0;
   $results = [];
 } else if (isset($_GET['edit'])) {
   $action = 'Modificar';
-  $title_sec = "Modificar Residencia";
+  $title_sec = "Modificar Residencia o Experiencia Formativa";
   $id_select = intval($_GET['i'] ?? 0);
   $statement = $pdo->prepare('SELECT * FROM residencias WHERE id = ?');
   $statement->execute([$id_select]);
   $results = $statement->fetch() ?: [];
 } else {
-  $title_sec = "Residencias";
-  $statement = $pdo->prepare('SELECT * FROM residencias ORDER BY top DESC, id DESC');
+  $title_sec = "Residencias y Experiencias Formativas";
+  // Primero las residencias y despues las experiencias formativas (como en la web), cada una con su orden.
+  $statement = $pdo->prepare("SELECT * FROM residencias ORDER BY (tipo = 'experiencia'), top DESC, id DESC");
   $statement->execute();
   $results = $statement->fetchAll();
   $total = count($results);
 }
 
-// Opciones del selector de posicion (solo cuando se muestra el formulario).
+// Opciones del selector de posicion: dependen del tipo elegido (cada tipo tiene su orden).
 if (isset($_GET['mod'])) {
-  $cant = intval($pdo->query('SELECT COUNT(*) FROM residencias')->fetchColumn());
-  $opciones = $action == 'Agregar' ? $cant + 1 : max(1, $cant);
-  if (isset($_POST['posicion'])) {
-    $pos_actual = intval($_POST['posicion']);
-  } else if ($action == 'Agregar') {
-    $pos_actual = $opciones; // las nuevas van al final por defecto
-  } else {
-    $ids = $pdo->query('SELECT id FROM residencias ORDER BY top DESC, id DESC')->fetchAll(PDO::FETCH_COLUMN);
-    $idx = array_search((string)$id_select, array_map('strval', $ids), true);
-    $pos_actual = $idx === false ? 1 : $idx + 1;
+  $tipo_form = $results['tipo'] ?? 'residencia';
+  $cant_por_tipo = [];   // cantidad de posiciones que ofrece cada tipo (incluyendo esta inscripcion)
+  $pos_por_tipo = [];    // posicion preseleccionada para cada tipo
+  foreach ($TIPOS as $valor => $nombre) {
+    $ids = ids_del_tipo($pdo, $valor, $id_select);
+    $cant_por_tipo[$valor] = count($ids) + 1;
+    $pos_por_tipo[$valor] = count($ids) + 1;   // por defecto va al final
   }
+  if ($action != 'Agregar') {
+    // En una modificacion, el tipo guardado conserva su posicion actual.
+    $statement = $pdo->prepare('SELECT tipo FROM residencias WHERE id = ?');
+    $statement->execute([$id_select]);
+    $tipo_guardado = $statement->fetchColumn();
+    if ($tipo_guardado && isset($TIPOS[$tipo_guardado])) {
+      $todos = ids_del_tipo($pdo, $tipo_guardado);
+      $idx = array_search((string)$id_select, array_map('strval', $todos), true);
+      $pos_por_tipo[$tipo_guardado] = $idx === false ? 1 : $idx + 1;
+    }
+  }
+  if (isset($_POST['posicion']) && isset($pos_por_tipo[$tipo_form])) {
+    $pos_por_tipo[$tipo_form] = max(1, min($cant_por_tipo[$tipo_form], intval($_POST['posicion'])));
+  }
+  $opciones = $cant_por_tipo[$tipo_form] ?? 1;
+  $pos_actual = $pos_por_tipo[$tipo_form] ?? $opciones;
 }
 require("includes/head.php");
 
@@ -152,7 +186,7 @@ require("includes/head.php");
           <div class="row mb-5">
             <div class="col col-12 col-md-6 mb-3 pe-md-3">
               <label class="form-label">Tipo de inscripción</label>
-              <select name="tipo" class="form-select bg-transparent text-white mb-2">
+              <select name="tipo" id="tipo" class="form-select bg-transparent text-white mb-2">
                 <?php
                 $tipo_actual = $results['tipo'] ?? 'residencia';
                 foreach ($TIPOS as $valor => $nombre) {
@@ -179,8 +213,8 @@ require("includes/head.php");
               <div class="row text-secondary">Link de Google Forms (https://docs.google.com/forms/...). Se muestra dentro de la página de la residencia.</div>
             </div>
             <div class="col col-12 col-md-6 mb-3 pe-md-3">
-              <label class="form-label">Posición en la web</label>
-              <select name="posicion" class="form-select bg-transparent text-white mb-2">
+              <label class="form-label">Posición en la web (dentro de su tipo)</label>
+              <select name="posicion" id="posicion" class="form-select bg-transparent text-white mb-2">
                 <?php
                 for ($p = 1; $p <= $opciones; $p++) {
                   $etiqueta = $p == 1 ? 'Posición 1 (la primera)' : 'Posición ' . $p;
@@ -188,7 +222,7 @@ require("includes/head.php");
                 }
                 ?>
               </select>
-              <div class="row text-secondary">Las demás residencias se acomodan solas.</div>
+              <div class="row text-secondary">Cada tipo tiene su propio orden. Las demás inscripciones del mismo tipo se acomodan solas.</div>
             </div>
           </div>
           <div class="row">
@@ -201,6 +235,29 @@ require("includes/head.php");
           <input type="hidden" name="action" value="<?php echo h($action) ?>">
           <input type="hidden" name="id" value="<?php echo h($id_select) ?>">
         </form>
+        <script>
+          // Al cambiar el tipo, las posiciones disponibles cambian porque cada tipo tiene su propio orden.
+          (function() {
+            var cantidades = <?php echo json_encode($cant_por_tipo) ?>;
+            var preseleccion = <?php echo json_encode($pos_por_tipo) ?>;
+            var tipo = document.getElementById('tipo');
+            var pos = document.getElementById('posicion');
+            function armar() {
+              var n = cantidades[tipo.value] || 1;
+              var sel = preseleccion[tipo.value] || n;
+              pos.innerHTML = '';
+              for (var p = 1; p <= n; p++) {
+                var o = document.createElement('option');
+                o.value = p;
+                o.textContent = p === 1 ? 'Posición 1 (la primera)' : 'Posición ' + p;
+                if (p === sel) o.selected = true;
+                pos.appendChild(o);
+              }
+            }
+            tipo.addEventListener('change', armar);
+            armar();
+          })();
+        </script>
       </section>
 
     <?php } else { ?>
@@ -227,9 +284,12 @@ require("includes/head.php");
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($results as $pos => $row) { ?>
+              <?php $contador = [];
+              foreach ($results as $row) {
+                $tk = $row['tipo'] ?? 'residencia';
+                $contador[$tk] = ($contador[$tk] ?? 0) + 1; ?>
                 <tr>
-                  <td valign="middle"><?php echo $pos + 1 ?></td>
+                  <td valign="middle"><?php echo $contador[$tk] ?></td>
                   <td valign="middle" class="text-primary"><strong><?php echo h($row['title']) ?></strong></td>
                   <td valign="middle"><?php echo h($TIPOS[$row['tipo'] ?? 'residencia'] ?? 'Residencias') ?></td>
                   <td valign="middle"><a href="<?php echo h($row['form_url']) ?>" target="_blank" rel="noopener noreferrer">Ver formulario</a></td>

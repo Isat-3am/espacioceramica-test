@@ -183,3 +183,4 @@ Mensaje corto al dev:
 - Carrito: el total en USD mostraba el total en pesos con la sigla USD; ahora suma los precios en dólares.
 - Panel: el menú y los títulos de "Voluntarios" pasaron a "Residentes" en backend-test (archivos en `docs/backend/panel-residentes/`); falta aplicarlo al panel real al publicar.
 - Panel: botones "Editar" y "Eliminar" con texto en todas las listas (archivos en `docs/backend/panel-botones-texto/`); aplicado en backend-test, falta en el panel real al publicar.
+- Panel Residencias y Exp. Formativas: menú en dos renglones, títulos que incluyen ambos tipos y orden propio por tipo (selector de posición según el tipo). Aplicado en backend-test; falta en el panel real al publicar (`docs/backend/panel-botones-texto/residencias.php` + `panel-residentes/header.php`).
