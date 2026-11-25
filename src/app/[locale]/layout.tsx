@@ -54,6 +54,9 @@ export const metadata: Metadata = {
   title: "Espacio Cerámica",
   description:
     "Espacio cerámica es nuestro taller, un proyecto de búsqueda e investigación que surgió en el 2008, donde reunimos nuestras obsesiones en torno al oficio. Desde el comienzo construimos, a través de la experiencia, nuestra profesión, ampliando y profundizando nuestros conocimientos con cada nueva horneada.",
+  other: {
+    "publicacion-test": "prueba de publicacion de Marco, sin cambios visibles",
+  },
 };
 
 export function generateStaticParams() {
