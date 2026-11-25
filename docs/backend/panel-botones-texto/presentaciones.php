@@ -164,9 +164,17 @@ require("includes/head.php");
             </div>
 
             <div class="col col-12 col-md-6 mb-3">
-              <label class="form-label">Top</label>
-              <input type="number" name="top" min="0" max="<?php echo $top_max ?>" step="1" class="form-control bg-transparent text-white mb-2" value="<?php echo $top_val ?>" onkeydown="if(['ArrowUp','ArrowDown','Tab'].indexOf(event.key)<0) return false;" onpaste="return false" />
-              <div class="row text-secondary">Posición en la lista, de 0 a <?php echo $top_max ?> (usar las flechas). El número más alto va primero. El sitio toma las fotos y los textos según este orden: conviene no cambiarlo en las presentaciones que ya existen.</div>
+              <label class="form-label">Posición en la web</label>
+              <select name="top" id="top" class="form-select bg-transparent text-white mb-2">
+                <?php
+                for ($p = 1; $p <= $top_max + 1; $p++) {
+                  $valor = $top_max + 1 - $p;
+                  $texto = $p . '&deg;' . ($p == 1 ? ' (la primera)' : ($p == $top_max + 1 ? ' (la última)' : ''));
+                  echo '<option value="' . $valor . '"' . ($valor == $top_val ? ' selected' : '') . '>' . $texto . '</option>';
+                }
+                ?>
+              </select>
+              <div class="row text-secondary">Elegí en qué lugar se muestra: 1° es la primera. Las demás se acomodan solas. El sitio toma las fotos y los textos según este orden: conviene no cambiarlo en las presentaciones que ya existen.</div>
             </div>
 
           </div>

@@ -3,6 +3,7 @@
 require_once('./utilities/session.php');
 require_once('./utilities/functions.php');
 require_once('./db/connection.php');
+require_once('./utilities/orden.php');
 
 $file_main = "galleries";
 $table = "items";
@@ -35,21 +36,22 @@ if (isset($_POST['form'])) {
         $sec,
         $image,
         $category,
-        $top
+        0
       ]);
-
-      header("Location:$file_main");
+orden_mover($pdo, 'items', 'type = ? AND category = ?', [$sec, intval($category)], $pdo->lastInsertId(), $top);
+header("Location:$file_main");
     } catch (PDOException $e) {
       echo "Error en la consulta: " . $e->getMessage();
     }
   } else {
-    $sql = 'UPDATE items SET `title` = "' . $title  . '", `category` = "' . $category . '", `top` = "' . $top . '" ';
+    $sql = 'UPDATE items SET `title` = "' . $title  . '", `category` = "' . $category . '" ';
 
     if ($_FILES['userfile1']['name']) $sql .= ", `image` = '$image' ";
 
     $sql .= " WHERE `id` = $id;";
     $statement = $pdo->prepare($sql);
     $statement->execute();
+    orden_mover($pdo, 'items', 'type = ? AND category = ?', [$sec, intval($category)], intval($id), $top);
     header("Location:$file_main");
   }
 }
@@ -81,6 +83,25 @@ if (isset($_GET['add'])) {
   $statement->execute();
   $results = $statement->fetchAll();
   $total = $statement->rowCount();
+}
+// Orden por posicion (1 = primera). Cada seccion de galeria tiene su propio orden.
+if (isset($_GET['mod'])) {
+  $orden_cat = intval($results['category'] ?? 1);
+  $orden_cants = [];
+  $orden_sels = [];
+  foreach ([1, 2] as $c) {
+    $orden_ids = orden_ids($pdo, 'items', 'type = ? AND category = ?', [$sec, $c]);
+    $orden_idx = (($action ?? '') == 'Modificar' && isset($id_select) && intval($results['category'] ?? 0) == $c) ? array_search(intval($id_select), $orden_ids, true) : false;
+    $orden_cants[$c] = $orden_idx !== false ? count($orden_ids) : count($orden_ids) + 1;
+    $orden_sels[$c] = $orden_idx !== false ? $orden_idx + 1 : $orden_cants[$c];
+  }
+  $orden_n = $orden_cants[$orden_cat] ?? 1;
+  $orden_sel = $orden_sels[$orden_cat] ?? $orden_n;
+} else {
+  $pos_map = [];
+  foreach ([1, 2] as $c) {
+    foreach (orden_ids($pdo, 'items', 'type = ? AND category = ?', [$sec, $c]) as $i => $rid) $pos_map[$rid] = $i;
+  }
 }
 require("includes/head.php");
 
@@ -120,9 +141,9 @@ require("includes/head.php");
             </div>
 
             <div class="col col-12 col-md-6 mb-3 pe-md-3">
-              <label class="form-label">Top</label>
-              <input type="number" name="top" class="form-control bg-transparent text-white mb-2" value="<?php if (isset($results['top'])) echo ($results['top']) ?>" />
-              <div class="row text-secondary">Número de prioridad en los resultados.</div>
+              <label class="form-label">Posición en la web</label>
+              <?php echo orden_selector($orden_n, $orden_sel); ?>
+              <div class="row text-secondary">Elegí en qué lugar se muestra: 1° es la primera. Las demás se acomodan solas.</div>
             </div>
           </div>
           <div class="row">
@@ -135,6 +156,29 @@ require("includes/head.php");
           <input type="hidden" name="action" value="<?php echo $action ?>">
           <input type="hidden" name="id" value="<?php echo $id_select ?>">
         </form>
+        <script>
+          // Al cambiar la seccion cambian las posiciones disponibles: cada seccion tiene su propio orden.
+          (function() {
+            var cantidades = <?php echo json_encode($orden_cants) ?>;
+            var preseleccion = <?php echo json_encode($orden_sels) ?>;
+            var cat = document.querySelector('select[name="category"]');
+            var pos = document.getElementById('top');
+            function armar() {
+              var n = cantidades[cat.value] || 1;
+              var sel = preseleccion[cat.value] || n;
+              pos.innerHTML = '';
+              for (var p = 1; p <= n; p++) {
+                var o = document.createElement('option');
+                o.value = p;
+                o.innerHTML = p + '&deg;' + (p === 1 ? ' (la primera)' : (p === n ? ' (la última)' : ''));
+                if (p === sel) o.selected = true;
+                pos.appendChild(o);
+              }
+            }
+            cat.addEventListener('change', armar);
+            armar();
+          })();
+        </script>
       </section>
 
     <?php } else { ?>
@@ -157,7 +201,7 @@ require("includes/head.php");
               <tr class="text-secondary">
                 <th scope="col">Imagen</th>
                 <th scope="col">Sección</th>
-                <th scope="col">Top</th>
+                <th scope="col">Posición</th>
                 <th scope="col"></th>
               </tr>
             </thead>
@@ -185,7 +229,7 @@ require("includes/head.php");
                     <strong><?php echo $section; ?></strong>
                   </td>
                   <td valign="middle">
-                    <?php echo $top; ?>
+                    <?php echo isset($pos_map[$id]) ? ($pos_map[$id] + 1) . '&deg;' : '-'; ?>
                   </td>
                   <td valign="middle" align="right">
                     <a href="?mod=1&edit=1&i=<?php echo $id ?>" class="circle circle-btn bg-transparent"><i class="bi bi-file-earmark-text"></i> Editar</a>

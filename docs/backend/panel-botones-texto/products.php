@@ -3,6 +3,7 @@
 require_once('./utilities/session.php');
 require_once('./utilities/functions.php');
 require_once('./db/connection.php');
+require_once('./utilities/orden.php');
 
 $file_main = "products";
 $table = "items";
@@ -41,7 +42,7 @@ if (isset($_POST['form'])) {
         $category,
         $category_2,
         $image,
-        $top,
+        0,
         getSlug($title),
         $size,
         $size_en,
@@ -51,19 +52,20 @@ if (isset($_POST['form'])) {
         $price_usd,
         $stock
       ]);
-
-      header("Location:$file_main");
+orden_mover($pdo, 'items', 'type = ?', [$sec], $pdo->lastInsertId(), $top);
+header("Location:$file_main");
     } catch (PDOException $e) {
       echo "Error en la consulta: " . $e->getMessage();
     }
   } else {
-    $sql = 'UPDATE items SET `title` = "' . $title  . '", `title_en` = "' . $title_en . '", `text` = "' . $text . '", `text_en` = "' . $text_en . '", `top` = "' . $top . '" , `author` = "' . $author . '" , `slug` = "' . getSlug($title_en) . '", `category` = "' . $category . '", `category_2` = "' . $category_2 . '", `size` = "' . $size . '", `size_en` = "' . $size_en . '", `text_2` = "' . $text_2 . '", `text_2_en` = "' . $text_2_en . '", `price_ars` = "' . $price_ars . '", `price_usd` = "' . $price_usd . '", `stock` = "' . $stock . '"';
+    $sql = 'UPDATE items SET `title` = "' . $title  . '", `title_en` = "' . $title_en . '", `text` = "' . $text . '", `text_en` = "' . $text_en . '" , `author` = "' . $author . '" , `slug` = "' . getSlug($title_en) . '", `category` = "' . $category . '", `category_2` = "' . $category_2 . '", `size` = "' . $size . '", `size_en` = "' . $size_en . '", `text_2` = "' . $text_2 . '", `text_2_en` = "' . $text_2_en . '", `price_ars` = "' . $price_ars . '", `price_usd` = "' . $price_usd . '", `stock` = "' . $stock . '"';
 
     if ($_FILES['userfile1']['name']) $sql .= ", `image` = '$image' ";
 
     $sql .= " WHERE `id` = $id;";
     $statement = $pdo->prepare($sql);
     $statement->execute();
+    orden_mover($pdo, 'items', 'type = ?', [$sec], intval($id), $top);
     header("Location:$file_main");
   }
 }
@@ -119,7 +121,16 @@ if (isset($_GET['add'])) {
   $statement->execute();
   $results = $statement->fetchAll();
   $total = $statement->rowCount();
-  $order_list = array('top' => 'Top', 'price_ars' => 'Precio', 'category_name' => 'Categoría', 'author_name' => 'Autor');
+  $order_list = array('top' => 'Posición', 'price_ars' => 'Precio', 'category_name' => 'Categoría', 'author_name' => 'Autor');
+}
+// Orden por posicion (1 = primera).
+if (isset($_GET['mod'])) {
+  $orden_ids = orden_ids($pdo, 'items', 'type = ?', [$sec]);
+  $orden_idx = (($action ?? '') == 'Modificar' && isset($id_select)) ? array_search(intval($id_select), $orden_ids, true) : false;
+  $orden_n = $orden_idx !== false ? count($orden_ids) : count($orden_ids) + 1;
+  $orden_sel = $orden_idx !== false ? $orden_idx + 1 : $orden_n;
+} else {
+  $pos_map = array_flip(orden_ids($pdo, 'items', 'type = ?', [$sec]));
 }
 require("includes/head.php");
 
@@ -252,9 +263,9 @@ require("includes/head.php");
               <?php if (isset($results['image'])) if ($results['image'])  echo '<a href="./images/' . $results['image'] . '" target="_blank" class="opacity"><img src="./images/' . $results['image'] . '" class="mt-3 img-circle-large mb-3" /></a>'; ?>
             </div>
             <div class="col col-12 col-md-6 ">
-              <label class="form-label">Top</label>
-              <input type="number" name="top" class="form-control bg-transparent text-white mb-2" value="<?php if (isset($results['top'])) echo ($results['top']) ?>" />
-              <div class="row text-secondary">Número de prioridad en los resultados.</div>
+              <label class="form-label">Posición en la web</label>
+              <?php echo orden_selector($orden_n, $orden_sel); ?>
+              <div class="row text-secondary">Elegí en qué lugar se muestra: 1° es la primera. Las demás se acomodan solas.</div>
             </div>
           </div>
           <div class="row">
@@ -287,7 +298,7 @@ require("includes/head.php");
                 <th scope="col">Precio</th>
                 <th scope="col">Categoría</th>
                 <th scope="col">Autor</th>
-                <th scope="col">Top</th>
+                <th scope="col">Posición</th>
                 <th scope="col">Galería</th>
                 <th scope="col"></th>
               </tr>
@@ -326,7 +337,7 @@ require("includes/head.php");
                     <?php echo $author; ?>
                   </td>
                   <td valign="middle">
-                    <?php echo $top; ?>
+                    <?php echo isset($pos_map[$id]) ? ($pos_map[$id] + 1) . '&deg;' : '-'; ?>
                   </td>
                   <td valign="middle">
                     <a href="images.php?id_sec=<?php echo $id; ?>">Imágenes (<?php echo $total_images; ?>)</a>

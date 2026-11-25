@@ -16,3 +16,12 @@ Aplicado en backend-test el 25/11/2026. Para el sitio real se sube junto con el 
 
 ## Campos de número con botones - y + (25/11/2026)
 Todos los campos de número del panel (stock, precios, Top) tienen botones "−" y "+" grandes y siempre visibles, que también sirven en el celular. Respetan mínimo, máximo y paso del campo. `footer.php` va en `includes/footer.php` (agrega el script) y `custom.css` en `css/custom.css`. Si el panel real tiene otro `footer.php`, agregar solo el bloque `<script>` de los botones antes del bloque `<?php` final.
+
+## Orden por posición (1°, 2°, 3°...) en lugar de "Top" (25/11/2026)
+- En Productos, Hornos, Residentes, Nosotros, Galerías, Imágenes y Presentaciones el campo "Top" (número libre) pasó a un selector **"Posición en la web"**: 1° es la primera, las demás se acomodan solas. La lista muestra la posición ("1°", "2°"...).
+- Antes el número más alto aparecía primero y muchos productos compartían el 0 (orden sin criterio). Ahora se numera seguido y no hay empates.
+- `orden.php` va en `utilities/orden.php` (funciones compartidas) y los 7 paneles van en la raíz del panel.
+- Al guardar, se numera el grupo con la misma consulta que usa la API (`ORDER BY top DESC`), así el orden que ya se ve en la web **no cambia** la primera vez. Probado en backend-test con una simulación que se revirtió: guardar un registro en su propia posición deja el mismo orden en todos los grupos (69 productos, 23 residentes, 17 y 8 imágenes de galería, etc.) y mover a la posición 1 funciona.
+- Cada grupo tiene su propio orden: productos, hornos, residentes, Nosotros, cada sección de galería, y las fotos de cada producto/horno.
+- Presentaciones sigue guardando el mismo número de siempre (el sitio las toma por posición); solo cambia cómo se elige.
+- Para el sitio real: antes de subir, comparar cada archivo con el del panel real y aplicar solo estos cambios si hay otras diferencias.
