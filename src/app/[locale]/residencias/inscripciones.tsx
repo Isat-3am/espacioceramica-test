@@ -53,7 +53,7 @@ const Inscripciones = ({ locale }: { locale: string }) => {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row items-start gap-4 pt-12">
+    <div className="flex flex-col lg:flex-row items-start gap-4 pt-20">
       <div className="lg:w-1/4">
         <h2 className="text-sm font-[--lastik-regular] uppercase">
           {t("register")}
