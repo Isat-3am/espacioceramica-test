@@ -41,7 +41,7 @@
             <a class="nav-link <?php if ($sec == 5) echo "active"; ?>" href="galleries">Galerias</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-primary link-primary" target="_blank" href="#">Web</a>
+            <a class="nav-link text-primary link-primary" target="_blank" rel="noopener" href="https://espacioceramica-test.vercel.app">Web</a>
           </li>
           <li class="nav-item">
             <a class="nav-link text-primary link-primary" href="logout">Cerrar sesión</a>

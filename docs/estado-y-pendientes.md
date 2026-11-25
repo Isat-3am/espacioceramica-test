@@ -187,3 +187,4 @@ Mensaje corto al dev:
 - Panel: flechas de subir/bajar de los campos de número más grandes y siempre visibles (reemplazan los botones − y + que se probaron antes); aplicado en backend-test, falta en el panel real al publicar (`panel-botones-texto/custom.css`; `footer.php` sin cambios respecto del original).
 - Test: se cargó la inscripción "Experiencia Formativa 1 Febrero 2027" (tipo experiencia, sin descripción) con el formulario de Google que pasó Marco. Dato de prueba del test, no del sitio real.
 - Panel: el campo "Top" pasó a selector de posición (1°, 2°, 3°...) en Productos, Hornos, Residentes, Nosotros, Galerías, Imágenes y Presentaciones (`panel-botones-texto/orden.php` + paneles). Aplicado en backend-test; el orden que se ve en la web no cambió. Falta en el panel real al publicar.
+- Panel: el botón "Web" del menú ahora abre el sitio (en backend-test, el sitio de test). Al publicar en el panel real, apuntarlo a `https://espacioceramicapatagonia.com`.

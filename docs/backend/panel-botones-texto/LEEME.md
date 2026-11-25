@@ -27,3 +27,6 @@ Se sacaron los botones − y + (quedaban mal ubicados). Ahora las flechas nativa
 - Para el sitio real: antes de subir, comparar cada archivo con el del panel real y aplicar solo estos cambios si hay otras diferencias.
 
 `head.php` va en `includes/head.php`: la hoja de estilos se pide con `?v=20261125b` (custom.css?v=...) para que el navegador y Cloudflare no sigan mostrando la versión vieja (el CSS se guardaba 7 días en caché). Cada vez que se cambie `custom.css`, cambiar ese número.
+
+## Botón "Web" del menú (25/11/2026)
+El botón "Web" de `header.php` tenía la dirección vacía (`#`). Ahora abre el sitio en una pestaña nueva: en backend-test apunta a `https://espacioceramica-test.vercel.app`. **Al publicar en el panel real, cambiarlo por `https://espacioceramicapatagonia.com`** (archivo `docs/backend/panel-residentes/header.php`).
