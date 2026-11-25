@@ -21,7 +21,7 @@ Todo lo de abajo se hace recién cuando Marco avise que es el momento y los arte
 12. **Vercel real:** revisar las variables de entorno y el mail de transferencia bancaria (hoy usa `/api/send-mail` con el servidor de mail del desarrollador anterior).
 
 ## D. Verificación y vuelta atrás
-13. **Compra real chica con Mercado Pago:** se devuelve después. Verificar que el dinero llegue a la cuenta de los artesanos, el pedido guardado, el stock descontado y los mails. Probar también PayPal y transferencia.
+13. **Compra real chica con Mercado Pago:** el artesano la hace con el producto "ddd" (id 159, ARS 1.000, stock 1), que ya está cargado en la tienda real solo para esta prueba. Se devuelve después y, al terminar, se borra "ddd" desde el panel (o se le repone el stock si se quiere repetir). Verificar que el dinero llegue a la cuenta de los artesanos, el pedido guardado, el stock descontado y los mails. Probar también PayPal y transferencia.
 14. **Vuelta atrás:** con el backup y las copias de los archivos originales se puede volver al estado anterior.
 
 ## Pendientes que no frenan la publicación
