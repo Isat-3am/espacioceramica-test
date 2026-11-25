@@ -96,7 +96,7 @@ const page = () => {
           action={() => goTo("#experiencias-formativas")}
         />
         <Item
-          title={locale === "es" ? "Voluntarios" : "Volunteers"}
+          title={locale === "es" ? "Residentes" : "Residents"}
           active={article === "#voluntariados"}
           action={() => goTo("#voluntariados")}
         />

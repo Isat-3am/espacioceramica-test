@@ -40,7 +40,7 @@ const page = ({ locale }: { locale: string }) => {
     >
       <div className="lg:w-1/4">
         <h2 className="text-sm font-[--lastik-regular] uppercase">
-          {locale === "es" ? "Voluntarios" : "Volunteers"}
+          {locale === "es" ? "Residentes" : "Residents"}
         </h2>
       </div>
       <div className="lg:w-1/2 text-sm">
