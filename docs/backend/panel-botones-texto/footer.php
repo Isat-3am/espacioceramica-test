@@ -60,36 +60,6 @@
     });
   });
 </script>
-<script>
-  // Campos de numero: botones - y + siempre visibles y grandes (sirven tambien en el celular,
-  // donde las flechitas del navegador no aparecen). Respetan min, max y step del campo.
-  (function() {
-    document.querySelectorAll('input[type="number"]').forEach(function(input) {
-      if (input.closest('.num-wrap')) return;
-      var wrap = document.createElement('div');
-      wrap.className = 'num-wrap mb-2';
-      input.parentNode.insertBefore(wrap, input);
-      function boton(texto, etiqueta, accion) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'num-btn';
-        b.textContent = texto;
-        b.setAttribute('aria-label', etiqueta);
-        b.addEventListener('click', function() {
-          if (input.disabled || input.readOnly) return;
-          if (input.value === '') input.value = input.min !== '' ? input.min : 0;
-          else accion();
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
-        });
-        return b;
-      }
-      wrap.appendChild(boton('\u2212', 'Restar', function() { input.stepDown(); }));
-      wrap.appendChild(input);
-      wrap.appendChild(boton('+', 'Sumar', function() { input.stepUp(); }));
-    });
-  })();
-</script>
 <?php
 // ---- Agregar AL FINAL de includes/footer.php (despues del </script> que ya tiene) ----
 // Traduccion automatica es -> en, solo en los paneles que tienen casillas en los dos idiomas.
