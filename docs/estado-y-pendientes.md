@@ -181,3 +181,4 @@ Mensaje corto al dev:
 - Las credenciales de producción de los artesanos ya las tiene Marco: se cargan solo en `config_pagos.php` del servidor real al publicar, nunca en el repo ni en el test. Al publicar, el mail de aviso de compra debe pasar a la dirección de los artesanos (en el test llega a la de Marco) y hacer una compra real chica para confirmar.
 - Residencias: "Voluntarios" pasó a "Residentes" (botón y título); más margen al ir a cada sección desde el menú (la barra de 3 botones tapaba el título de Inscripción); se borró el texto de prueba de la descripción de Residencias en el test (falta cargar la real desde el panel).
 - Carrito: el total en USD mostraba el total en pesos con la sigla USD; ahora suma los precios en dólares.
+- Panel: el menú y los títulos de "Voluntarios" pasaron a "Residentes" en backend-test (archivos en `docs/backend/panel-residentes/`); falta aplicarlo al panel real al publicar.
